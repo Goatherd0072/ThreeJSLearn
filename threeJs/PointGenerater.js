@@ -1,13 +1,18 @@
 ﻿import * as THREE from "three";
 
-export class PointGenerater {
+export class ModelPoint {
   constructor(model, material) {
     this.model = model;
     this.material = material;
+    this.geometry = new THREE.Points();
+    this.buffer = new THREE.BufferGeometry();
+    this.count = 0;
+    this.GenenratePoints();
   }
 
   GenenratePoints(randomColor = false) {
-    let cakevertices = PointGenerater._combineBuffer(this.model, "position");
+    let cakevertices = ModelPoint._combineBuffer(this.model, "position");
+    this.count = cakevertices.count;
     //  cakeuv = combineBuffer(this.model, "uv");
 
     let cakebuffer = new THREE.BufferGeometry();
@@ -18,19 +23,45 @@ export class PointGenerater {
     cakebuffer.applyQuaternion(this.model.quaternion);
 
     if (randomColor) {
-      const colors = new Float32Array(cakevertices.count * 3); // 每个颜色由三个rgb组成
-      for (let i = 0; i < cakevertices.count * 3; i += 1) {
+      const colors = new Float32Array(this.count * 3); // 每个颜色由三个rgb组成
+      for (let i = 0; i < this.count * 3; i += 1) {
         colors[i] = Math.random();
       }
 
+      //随机颜色后把原颜色改成白色，避免叠加
       this.material.color = new THREE.Color("#FFFFFF");
       cakebuffer.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     }
+    cakebuffer.attributes.position.needsUpdate = true;
 
     //let pointMat = GetPointMaterial(materialSize, "#1DB482");
     let cakepoint = new THREE.Points(cakebuffer, this.material);
-    console.log(cakevertices.count);
-    return cakepoint;
+    this.geometry = cakepoint;
+    this.buffer = cakebuffer;
+
+    // console.log(cakebuffer === this.bufferGeometry);
+    // console.log(this.geometry);
+    // console.log(this.geometry === cakepoint);
+
+    const clock = new THREE.Clock();
+    const tick = () => {
+      const elapsedTime = clock.getElapsedTime();
+      // particles.position.x = 0.1 * Math.sin(elapsedTime)
+
+      for (let i = 0; i < this.count; i += 1) {
+        const x = this.buffer.attributes.position.getY(i);
+        this.buffer.attributes.position.setY(
+          i,
+          x + Math.sin(elapsedTime) * 0.1
+        );
+      }
+      this.buffer.attributes.position.needsUpdate = true;
+      // pointMaterial.needsUpdate = true
+
+      requestAnimationFrame(tick);
+    };
+    tick();
+    return this.geometry;
   }
 
   static _combineBuffer(model, bufferName) {
@@ -57,9 +88,13 @@ export class PointGenerater {
         offset += buffer.array.length;
       }
     });
-    console.log(count);
+
     return new THREE.BufferAttribute(combined, 3);
+  }
+
+  static _GetElapTime() {
+    return new THREE.Clock().getElapsedTime();
   }
 }
 
-export default PointGenerater;
+export default ModelPoint;

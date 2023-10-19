@@ -1,46 +1,66 @@
-﻿import * as THREE from "three";
+﻿import * as THREE from "./node_modules/three/build/three.module.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as dat from "lil-gui";
 
 // Canvas
-const canvas = document.querySelector("#c");
+const canvas = document.querySelector("#mainCanvas");
 
 // Scene
 const scene = new THREE.Scene();
 
 /**
+ * Textures
+ */
+const textureLoader = new THREE.TextureLoader();
+const particleTexture = textureLoader.load(
+  "https://gw.alicdn.com/imgextra/i3/O1CN01DO6Ed61QtcMKsVnK2_!!6000000002034-2-tps-56-56.png"
+);
+
+/**
  * Particles
  */
 // geometry
-// geometry
 const particlesGeometry = new THREE.BufferGeometry();
-const count = 500000;
+const count = 20000;
 const positions = new Float32Array(count * 3); // 每个点由三个坐标值组成（x, y, z）
+const colors = new Float32Array(count * 3); // 每个颜色由三个rgb组成
 for (let i = 0; i < count * 3; i += 1) {
-  positions[i] = (Math.random() - 0.5) * 5;
+  positions[i] = (Math.random() - 0.5) * 10;
+  colors[i] = Math.random();
 }
 particlesGeometry.setAttribute(
   "position",
   new THREE.BufferAttribute(positions, 3)
 );
+particlesGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
 // material
 const pointMaterial = new THREE.PointsMaterial({
-  size: 0.02,
+  size: 0.1,
   sizeAttenuation: true,
 });
-pointMaterial.color = new THREE.Color("#ff88cc");
-const textureLoader = new THREE.TextureLoader();
-const particleTexture = textureLoader.load("./Png/noise04.png");
-pointMaterial.map = particleTexture;
+
+// pointMaterial.color = new THREE.Color('#ff88cc')
+// pointMaterial.map = particleTexture
+pointMaterial.alphaMap = particleTexture;
+pointMaterial.transparent = true;
+// pointMaterial.alphaTest = 0.001
+// pointMaterial.depthTest = false
+pointMaterial.depthWrite = false;
+pointMaterial.blending = THREE.AdditiveBlending;
+pointMaterial.vertexColors = true;
 
 const particles = new THREE.Points(particlesGeometry, pointMaterial);
 scene.add(particles);
 
+// cube
+// const cube = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial())
+// scene.add(cube)
+
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight("#ffffff", 0.4);
+const ambientLight = new THREE.AmbientLight("#ffffff", 1);
 scene.add(ambientLight);
 
 // Size
@@ -60,20 +80,34 @@ camera.position.set(2, 1.8, 2);
 
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
-// controls.autoRotateSpeed = 0.2
+controls.autoRotateSpeed = 1;
 controls.zoomSpeed = 0.3;
+
+const axesHelper = new THREE.AxesHelper(1);
+scene.add(axesHelper);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
   canvas,
+  // antialias: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 // Animations
+const clock = new THREE.Clock();
 const tick = () => {
+  const elapsedTime = clock.getElapsedTime();
+  // particles.position.x = 0.1 * Math.sin(elapsedTime)
+
+  for (let i = 0; i < count; i += 1) {
+    const x = particlesGeometry.attributes.position.getX(i);
+    particlesGeometry.attributes.position.setY(i, Math.sin(elapsedTime + x));
+  }
+  particlesGeometry.attributes.position.needsUpdate = true;
+
   controls.update();
-  pointMaterial.needsUpdate = true;
+  // pointMaterial.needsUpdate = true
 
   // Render
   renderer.render(scene, camera);
@@ -89,5 +123,4 @@ const gui = new dat.GUI();
 
 gui.add(controls, "autoRotate");
 gui.add(controls, "autoRotateSpeed", 0.1, 10, 0.01);
-gui.add(pointMaterial, "size", 0.01, 0.1, 0.001);
-gui.add(pointMaterial, "sizeAttenuation");
+gui.close();

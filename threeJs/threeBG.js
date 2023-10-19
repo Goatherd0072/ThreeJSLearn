@@ -3,7 +3,7 @@ import * as lilgui from "lil-gui";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
-import { PointGenerater } from "./PointGenerater.js";
+import { ModelPoint } from "./PointGenerater.js";
 
 var textureLoader = new THREE.TextureLoader();
 // Canvas
@@ -36,24 +36,25 @@ plane.visible = false;
 /// model
 // gltfLoader
 const gltfLoader = new GLTFLoader();
-var pGenerater = new PointGenerater();
+var modelP;
 
 gltfLoader.load("./Model/scene.gltf", (gltf) => {
   console.log("success");
   console.log(gltf);
   //addModel(gltf.scene);
   var mat = GetPointMaterial(0.025, "#1DB482");
-  pGenerater = new PointGenerater(gltf.scene.children[0], mat);
-  var gtflObj = pGenerater.GenenratePoints(true);
+  modelP = new ModelPoint(gltf.scene.children[0], mat);
+  var gtflObj = modelP.GenenratePoints(true);
   scene.add(gtflObj);
+  tick();
   //addPoint(gltf.scene.children[0], 0.1);
 });
 
 // 中间生成一个cube
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: "#FFFFFF" });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+// const geometry = new THREE.BoxGeometry(1, 1, 1);
+// const material = new THREE.MeshBasicMaterial({ color: "#FFFFFF" });
+// const cube = new THREE.Mesh(geometry, material);
+// scene.add(cube);
 
 function GetPointMaterial(Size = 1, color = "#FFFFFF") {
   // material
@@ -187,3 +188,61 @@ function FPSShower() {
 }
 
 FPSShower();
+
+// AxesHelper
+const axesHelper = new THREE.AxesHelper(100);
+scene.add(axesHelper);
+
+const particlesGeometry = new THREE.BufferGeometry();
+const count = 15000;
+const positions = new Float32Array(count * 3); // 每个点由三个坐标值组成（x, y, z）
+const colors = new Float32Array(count * 3); // 每个颜色由三个rgb组成
+for (let i = 0; i < count * 3; i += 1) {
+  positions[i] = (Math.random() - 0.5) * 10;
+  colors[i] = Math.random();
+}
+particlesGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(positions, 3)
+);
+particlesGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+// material
+const pointMaterial = new THREE.PointsMaterial({
+  size: 0.1,
+  sizeAttenuation: true,
+});
+
+// pointMaterial.color = new THREE.Color('#ff88cc')
+// pointMaterial.map = particleTexture
+pointMaterial.transparent = true;
+// pointMaterial.alphaTest = 0.001
+// pointMaterial.depthTest = false
+pointMaterial.depthWrite = false;
+pointMaterial.blending = THREE.AdditiveBlending;
+pointMaterial.vertexColors = true;
+
+const particles = new THREE.Points(particlesGeometry, pointMaterial);
+scene.add(particles);
+
+// Animations
+const clock = new THREE.Clock();
+const tick = () => {
+  // const elapsedTime = clock.getElapsedTime();
+  // // particles.position.x = 0.1 * Math.sin(elapsedTime)
+  // //console.log(modelP.count);
+  // for (let i = 0; i < modelP.count; i += 1) {
+  //   const x = modelP.buffer.attributes.position.getY(i) + Math.sin(elapsedTime);
+  //   modelP.buffer.attributes.position.setY(i, x);
+  // }
+  // //modelP.bufferGeometry.attributes.position.needsUpdate = true;
+  // const elapsedTime = clock.getElapsedTime();
+  // // particles.position.x = 0.1 * Math.sin(elapsedTime)
+  // for (let i = 0; i < count; i += 1) {
+  //   const x = modelP.buffer.attributes.position.getY(i);
+  //   particlesGeometry.attributes.position.setY(i, Math.sin(elapsedTime + x));
+  //   modelP.buffer.attributes.position.setY(i, Math.sin(elapsedTime + x));
+  // }
+  // particlesGeometry.attributes.position.needsUpdate = true;
+  // requestAnimationFrame(tick);
+};
