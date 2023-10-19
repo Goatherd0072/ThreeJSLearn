@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home Sweet Home</title>
+    <!-- 导入css -->
+    <link rel="stylesheet" type="text/css" href="./css/scroll.css" />
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <p>
+      <span id="box" class="diagram left"></span>
+      I love boxes. Presents come in boxes. When I find a new box I'm always
+      excited to find out what's inside.
+    </p>
+    <p>
+      <span id="pyramid" class="diagram right"></span>
+      When I was a kid I dreamed of going on an expedition inside a pyramid and
+      finding a undiscovered tomb full of mummies and treasure.
+    </p>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./node_modules/three/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="./scroll.js">
+      // Our Javascript will go here.
+    </script>
+  </body>
+</html>

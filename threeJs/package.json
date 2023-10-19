@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "three": "^0.157.0",
+    "three.quarks": "^0.10.14"
+  },
+  "devDependencies": {
+    "lil-gui": "^0.18.2"
+  }
+}
