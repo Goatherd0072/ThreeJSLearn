@@ -13,7 +13,15 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color("#D4D4D4");
 
 // Camera
-const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100000);
+// const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100000);
+const camera = new THREE.OrthographicCamera(
+  window.innerWidth / -2,
+  window.innerWidth / 2,
+  window.innerHeight / 2,
+  window.innerHeight / -2,
+  0.1,
+  100000
+);
 // camera.position.set(4, 4, 12);
 camera.position.z = 1;
 
@@ -38,15 +46,18 @@ plane.visible = false;
 const gltfLoader = new GLTFLoader();
 var modelP;
 
-gltfLoader.load("./Model/scene.gltf", (gltf) => {
+//./Model/scene.gltf     skull
+gltfLoader.load("./Model/Logo/LOGO_001_HIGH.gltf", (gltf) => {
   console.log("success");
   console.log(gltf);
   //addModel(gltf.scene);
-  var mat = GetPointMaterial(0.025, "#1DB482");
-  modelP = new ModelPoint(gltf.scene.children[0], mat);
-  var gtflObj = modelP.GenenratePoints(true);
-  scene.add(gtflObj);
-  tick();
+  var mat = GetPointMaterial(2, "#1DB482");
+  modelP = new ModelPoint(gltf.scene, mat);
+  // var gtflObj = modelP.GenenratePoints(true);
+  // scene.add(gtflObj);
+  scene.add(modelP.geometry);
+  // tick(modelP);
+  //tick();
   //addPoint(gltf.scene.children[0], 0.1);
 });
 
@@ -169,7 +180,7 @@ gui.add(directionLight, "intensity", 0, 10, 0.01).name("light intensity");
 gui.add(plane, "visible").name("Show Plane");
 gui.add(camera.position, "x", -100, 100).name("Camera X");
 gui.add(camera.position, "y", -100, 100).name("Camera Y");
-gui.add(camera.position, "z", -100, 100).name("Camera Z");
+gui.add(camera.position, "z", -1000, 1000).name("Camera Z");
 // gui.add(modelMat, "size", 0, 1, 0.01).name("Point Size");
 // gui.add(modelMat, "color").name("Point Color");
 
@@ -193,56 +204,34 @@ FPSShower();
 const axesHelper = new THREE.AxesHelper(100);
 scene.add(axesHelper);
 
-const particlesGeometry = new THREE.BufferGeometry();
-const count = 15000;
-const positions = new Float32Array(count * 3); // 每个点由三个坐标值组成（x, y, z）
-const colors = new Float32Array(count * 3); // 每个颜色由三个rgb组成
-for (let i = 0; i < count * 3; i += 1) {
-  positions[i] = (Math.random() - 0.5) * 10;
-  colors[i] = Math.random();
-}
-particlesGeometry.setAttribute(
-  "position",
-  new THREE.BufferAttribute(positions, 3)
-);
-particlesGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-
-// material
-const pointMaterial = new THREE.PointsMaterial({
-  size: 0.1,
-  sizeAttenuation: true,
-});
-
-// pointMaterial.color = new THREE.Color('#ff88cc')
-// pointMaterial.map = particleTexture
-pointMaterial.transparent = true;
-// pointMaterial.alphaTest = 0.001
-// pointMaterial.depthTest = false
-pointMaterial.depthWrite = false;
-pointMaterial.blending = THREE.AdditiveBlending;
-pointMaterial.vertexColors = true;
-
-const particles = new THREE.Points(particlesGeometry, pointMaterial);
-scene.add(particles);
-
 // Animations
 const clock = new THREE.Clock();
-const tick = () => {
-  // const elapsedTime = clock.getElapsedTime();
-  // // particles.position.x = 0.1 * Math.sin(elapsedTime)
-  // //console.log(modelP.count);
-  // for (let i = 0; i < modelP.count; i += 1) {
-  //   const x = modelP.buffer.attributes.position.getY(i) + Math.sin(elapsedTime);
-  //   modelP.buffer.attributes.position.setY(i, x);
-  // }
-  // //modelP.bufferGeometry.attributes.position.needsUpdate = true;
-  // const elapsedTime = clock.getElapsedTime();
-  // // particles.position.x = 0.1 * Math.sin(elapsedTime)
-  // for (let i = 0; i < count; i += 1) {
-  //   const x = modelP.buffer.attributes.position.getY(i);
-  //   particlesGeometry.attributes.position.setY(i, Math.sin(elapsedTime + x));
-  //   modelP.buffer.attributes.position.setY(i, Math.sin(elapsedTime + x));
-  // }
-  // particlesGeometry.attributes.position.needsUpdate = true;
-  // requestAnimationFrame(tick);
-};
+function tick() {
+  // const num = getRandomArbitrary(-Math.PI, Math.PI);
+  // const speed = 0.1;
+
+  // // 让模型在 -5 到 5 之间来回移动
+  // const x = Math.sin(clock.getElapsedTime() * speed) * 5;
+  // const y = Math.sin(clock.getElapsedTime() * speed) * 5;
+  // modelP.geometry.position.setX(x);
+  // modelP.geometry.position.setY(y);
+
+  // modelP.geometry.translateY(10 * num);
+  for (let i = 0; i < modelP.count; i++) {
+    const num = getRandomArbitrary(-Math.PI, Math.PI);
+    const speed = 0.1;
+
+    // 让模型在 -5 到 5 之间来回移动
+    const x = Math.sin(clock.getElapsedTime() * speed) * 5;
+    const y = Math.sin(clock.getElapsedTime() * speed) * 5;
+    modelP.buffer.attributes.position.setXYZ(i, x, y, num);
+    // console.log(modelP.buffer.attributes.position);
+    // let x1 = modelP.buffer.attributes.position.getY(i) + Math.sin(num);
+    // modelP.buffer.attributes.position.setY(i, x1);
+  }
+  requestAnimationFrame(tick);
+
+  function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+}

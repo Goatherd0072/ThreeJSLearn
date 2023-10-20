@@ -4,13 +4,14 @@ export class ModelPoint {
   constructor(model, material) {
     this.model = model;
     this.material = material;
-    this.geometry = new THREE.Points();
-    this.buffer = new THREE.BufferGeometry();
     this.count = 0;
-    this.GenenratePoints();
+
+    this.buffer = this.GenenrateBuffer(true);
+    this.geometry = this.GenenratePoints();
+    //this.geometry.translateY(2);
   }
 
-  GenenratePoints(randomColor = false) {
+  GenenrateBuffer(randomColor = false) {
     let cakevertices = ModelPoint._combineBuffer(this.model, "position");
     this.count = cakevertices.count;
     //  cakeuv = combineBuffer(this.model, "uv");
@@ -34,36 +35,39 @@ export class ModelPoint {
     }
     cakebuffer.attributes.position.needsUpdate = true;
 
-    //let pointMat = GetPointMaterial(materialSize, "#1DB482");
-    let cakepoint = new THREE.Points(cakebuffer, this.material);
-    this.geometry = cakepoint;
-    this.buffer = cakebuffer;
+    return cakebuffer;
+  }
+
+  GenenratePoints() {
+    let cakepoint = new THREE.Points(this.buffer, this.material);
+    // this.buffer = cakebuffer;
+
+    return cakepoint;
 
     // console.log(cakebuffer === this.bufferGeometry);
     // console.log(this.geometry);
     // console.log(this.geometry === cakepoint);
 
-    const clock = new THREE.Clock();
-    const tick = () => {
-      const elapsedTime = clock.getElapsedTime();
-      // particles.position.x = 0.1 * Math.sin(elapsedTime)
+    // const clock = new THREE.Clock();
+    // const tick = () => {
+    //   const elapsedTime = clock.getElapsedTime();
+    //   // particles.position.x = 0.1 * Math.sin(elapsedTime)
 
-      for (let i = 0; i < this.count; i += 1) {
-        const x = this.buffer.attributes.position.getY(i);
-        this.buffer.attributes.position.setY(
-          i,
-          x + Math.sin(elapsedTime) * 0.1
-        );
-      }
-      this.buffer.attributes.position.needsUpdate = true;
-      // pointMaterial.needsUpdate = true
+    //   for (let i = 0; i < this.count; i += 1) {
+    //     const x = this.buffer.attributes.position.getY(i);
+    //     this.buffer.attributes.position.setY(
+    //       i,
+    //       x + Math.sin(elapsedTime) * 0.1
+    //     );
+    //   }
+    //   this.buffer.attributes.position.needsUpdate = true;
+    //   // pointMaterial.needsUpdate = true
 
-      requestAnimationFrame(tick);
-    };
-    tick();
-    return this.geometry;
+    //   requestAnimationFrame(tick);
+    // };
+    // tick();
+    // return this.geometry;
   }
-
   static _combineBuffer(model, bufferName) {
     let count = 0;
 
