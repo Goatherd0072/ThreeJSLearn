@@ -6,7 +6,7 @@ export class ModelPoint {
     this.material = material;
     this.count = 0;
 
-    this.buffer = this.GenenrateBuffer(true);
+    this.buffer = this.GenenrateBuffer(false);
     this.geometry = this.GenenratePoints();
     //this.geometry.translateY(2);
   }
@@ -31,6 +31,7 @@ export class ModelPoint {
 
       //随机颜色后把原颜色改成白色，避免叠加
       this.material.color = new THREE.Color("#FFFFFF");
+      this.material.vertexColors = true;
       cakebuffer.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     }
     cakebuffer.attributes.position.needsUpdate = true;

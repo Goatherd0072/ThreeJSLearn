@@ -1,10 +1,20 @@
 {
   "dependencies": {
+    "camera-controls": "^2.7.3",
     "gsap": "^3.12.2",
     "three": "^0.157.0",
     "three.quarks": "^0.10.14"
   },
   "devDependencies": {
     "lil-gui": "^0.18.2"
-  }
+  },
+  "name": "threejs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }

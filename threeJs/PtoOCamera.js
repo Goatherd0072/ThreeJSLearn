@@ -2,6 +2,7 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 //import { RGBELoader } from "./js/RGBELoader.js";
 import { GUI } from "lil-gui";
+import gsap from "gsap";
 
 // 当前的相机，透视相机，正交相机
 let curCamera, perCamera, orthCamera;
@@ -12,7 +13,7 @@ let SCREEN_HEIGHT = window.innerHeight;
 let aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 let cameraRig;
 
-const changeTime = 0.5;
+const changeTime = 100;
 const canvas = document.querySelector("#c");
 
 init();
@@ -70,9 +71,10 @@ function initCamera() {
   //cameraRig.add(curCamera);
 
   cameraRig.position.set(0, 10, 40);
-  curCamera = cameraRig.children[0];
-
-  scene.add(cameraRig);
+  curCamera = new THREE.PerspectiveCamera(60, aspect, 1, 10000);
+  curCamera.position.set(0, 10, 40);
+  scene.add(curCamera);
+  //scene.add(cameraRig);
   //curCamera = createPerCamera();
 }
 
@@ -188,6 +190,7 @@ function addGUI() {
   gui.add(param, "透视转正交");
   gui.add(param, "正交转透视");
   gui.add(param, "切换");
+  gui.add(curCamera, "fov", 1, 180);
 }
 
 function SwtichCamera() {
@@ -198,8 +201,15 @@ function SwtichCamera() {
   // } else {
   //   console.error("curCamera is Wrong");
   // }
+  // curCamera.fov = 50;
+  // // 设置目标参数
+  // gsap.to(curCamera, {
+  //   fov: 1, // 正交相机的fov
+  //   duration: 1,
+  // });
+
   change = true;
-  endT = 1;
+  endT = -1;
 }
 
 function orthCameraView() {
@@ -230,6 +240,8 @@ function animate() {
 }
 
 function render() {
+  curCamera.aspect = aspect;
+  curCamera.updateProjectionMatrix();
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
   renderer.render(scene, curCamera);
 }
@@ -255,51 +267,58 @@ function onWindowResize() {
 }
 
 var change = false;
-var curTime = 0.0;
+var startT = 0;
 var endT = -1;
 
 function SwtichCameraView() {
-  curTime += 0.05;
   if (!change) {
     return;
   }
 
-  let orthM, perM;
+  let orthM = new THREE.Matrix4();
+  let perM = new THREE.Matrix4();
 
-  if (curCamera === perCamera) {
-    orthM = orthCamera.projectionMatrix;
-    perM = perCamera.projectionMatrix;
-  } else if (curCamera === orthCamera) {
-    orthM = orthCamera.projectionMatrix;
-    perM = perCamera.projectionMatrix;
+  perM = curCamera.projectionMatrix.clone();
+  orthM = curCamera.projectionMatrix.makeOrthographic();
+
+  if (endT == -1) {
+    endT = changeTime;
   }
-
-  if (endT != -1) {
-    endT = Date.now() + changeTime;
-  }
-
-  if (Date.now() - endT < 0.1) {
+  // console.log("d " + Date.now());
+  // console.log("e " + endT);
+  if (endT - startT > 0.1) {
     curCamera.projectionMatrix = Matrix4Lerp(
       perM,
       orthM,
       Math.sqrt(Date.now())
     );
+    startT += 0.5;
+    console.log("startT " + startT + " //nendT " + endT);
+    console.log(curCamera.projectionMatrix.elements);
   } else {
     change = false;
     endT = -1;
+    startT = 0;
   }
 }
 
 function Matrix4Lerp(from, to, t) {
   t = Clamp(t, 0.0, 1.0);
   var newMatrix = new THREE.Matrix4();
-
   // newMatrix.SetRow(0, Vector4.Lerp(from.GetRow(0), to.GetRow(0), t));
   // newMatrix.SetRow(1, Vector4.Lerp(from.GetRow(1), to.GetRow(1), t));
   // newMatrix.SetRow(2, Vector4.Lerp(from.GetRow(2), to.GetRow(2), t));
   // newMatrix.SetRow(3, Vector4.Lerp(from.GetRow(3), to.GetRow(3), t));
+  let fromA, toA;
+  from.toArray(fromA);
+  to.toArray(toA);
+  let newM = [];
 
-  return to;
+  for (let i = 0; i < 16; i++) {
+    newM.push(THREE.MathUtils.lerp(fromA, toA, t));
+  }
+  newMatrix.fromArray(newM); //
+  return newMatrix;
 
   function Clamp(value, min, max) {
     return Math.max(Math.min(value, max), min);
