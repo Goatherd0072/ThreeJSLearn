@@ -8,7 +8,7 @@
 }
 html,
 body {
-  height: 50%;
+  height: 100%;
   margin: 0;
   color: rgb(0, 0, 0);
   font-size: 20pt;
@@ -23,13 +23,14 @@ h1 {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: -1;
+  z-index: 1;
   border: none;
-  pointer-events: auto;
+  pointer-events: all;
+  overflow: auto;
 }
 #content {
   padding: 1em;
-  height: 50vh; /* 设置高度为视口高度的一半 */
+  /* height: 50vh; 设置高度为视口高度的一半 */
   overflow: auto; /* 添加 overflow 属性以启用滚动条 */
 }
 #content > * {
