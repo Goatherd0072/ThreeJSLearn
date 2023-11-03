@@ -46,9 +46,9 @@ const curve2 = new THREE.CatmullRomCurve3([
 ]);
 
 const lookPos = [
-  new THREE.Vector3(0, 0, 0),
   new THREE.Vector3(100, 0, 0),
   new THREE.Vector3(200, 0, 0),
+  new THREE.Vector3(300, 0, 0),
   new THREE.Vector3(300, 0, 0),
 ];
 
@@ -295,7 +295,7 @@ function initModel() {
     console.log(gltf);
     //addModel(gltf.scene);
     let mat = GetPointMaterial(0.05, "#079DCA");
-    modelP1 = new ModelPoint(gltf.scene, mat);
+    modelP1 = new ModelPoint(gltf.scene.children[0], mat);
     // var gtflObj = modelP.GenenratePoints(true);
     // scene.add(gtflObj);
     modelP1.geometry.position.set(0, 0, 0);
@@ -343,32 +343,32 @@ function initModel() {
     scene.add(modelP4.geometry);
   });
 
-  gltfLoader.load("./Model/Logo/LOGO_UV/LOGO_UV.gltf", (gltf5) => {
-    console.log("success");
-    console.log(gltf5);
-    let mod = gltf5.scene;
-    mod.traverse(function (obj) {
-      if (obj.isMesh) {
-        const textureLoader = new THREE.TextureLoader();
-        let matB = textureLoader.load(
-          "./Model/Logo/LOGO_UV/LOGO_UV_BaseColor.png"
-        );
-        let matE = textureLoader.load(
-          "./Model/Logo/LOGO_UV/LOGO_UV_Emissive.png"
-        );
-        console.log(obj.isMesh);
-        obj.material = new THREE.MeshStandardMaterial({
-          alphaMap: matB,
-          transparent: true,
-          emissiveMap: matE,
-          alphaTest: 0.5,
-        });
-      }
-    });
-    mod.position.set(0, 100, 0);
-    mod.scale.set(10, 10, 10);
-    scene.add(mod);
-  });
+  // gltfLoader.load("./Model/Logo/LOGO_UV/LOGO_UV.gltf", (gltf5) => {
+  //   console.log("success");
+  //   console.log(gltf5);
+  //   let mod = gltf5.scene;
+  //   mod.traverse(function (obj) {
+  //     if (obj.isMesh) {
+  //       const textureLoader = new THREE.TextureLoader();
+  //       let matB = textureLoader.load(
+  //         "./Model/Logo/LOGO_UV/LOGO_UV_BaseColor.png"
+  //       );
+  //       let matE = textureLoader.load(
+  //         "./Model/Logo/LOGO_UV/LOGO_UV_Emissive.png"
+  //       );
+  //       console.log(obj.isMesh);
+  //       obj.material = new THREE.MeshStandardMaterial({
+  //         alphaMap: matB,
+  //         transparent: true,
+  //         emissiveMap: matE,
+  //         alphaTest: 0.5,
+  //       });
+  //     }
+  //   });
+  //   mod.position.set(0, 100, 0);
+  //   mod.scale.set(10, 10, 10);
+  //   scene.add(mod);
+  // });
 
   // 中间生成一个cube
   // const geometry = new THREE.BoxGeometry(1, 1, 1);
