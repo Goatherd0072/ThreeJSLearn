@@ -207,9 +207,10 @@ function SwtichCamera() {
   //   fov: 1, // 正交相机的fov
   //   duration: 1,
   // });
-
-  change = true;
-  endT = -1;
+  let preMart = curCamera.projectionMatrix;
+  gsap.to(curCamera, {
+    fov: 1
+  });
 }
 
 function orthCameraView() {
@@ -324,7 +325,7 @@ function Matrix4Lerp(from, to, t) {
     return Math.max(Math.min(value, max), min);
   }
 
-  function SetMatrixRow() {}
+  function SetMatrixRow() { }
 
-  function GetMartixRow() {}
+  function GetMartixRow() { }
 }
