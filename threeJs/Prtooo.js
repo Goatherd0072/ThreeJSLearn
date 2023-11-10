@@ -79,7 +79,7 @@ function init() {
     mesh.add(mesh2);
 
     const mesh3 = new THREE.Mesh(
-        new THREE.SphereGeometry(5, 16, 8),
+        new THREE.SphereGeometry(5,       16, 8),
         new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true })
     );
     mesh3.position.z = 150;
@@ -196,7 +196,7 @@ function render() {
 
         // cameraPerspective.fov = 35 + 30 * Math.sin(0.5 * r);
         // cameraPerspective.far = mesh.position.length();
-        cameraPerspective.updateProjectionMatrix();
+        // cameraPerspective.updateProjectionMatrix();
 
         cameraPerspectiveHelper.update();
         cameraPerspectiveHelper.visible = true;
@@ -206,7 +206,7 @@ function render() {
     } else {
 
         // cameraOrtho.far = mesh.position.length();
-        cameraOrtho.updateProjectionMatrix();
+        // cameraOrtho.updateProjectionMatrix();
 
         cameraOrthoHelper.update();
         cameraOrthoHelper.visible = true;
@@ -247,11 +247,29 @@ function addGUI() {
 function SwtichCamera() {
     let pM = cameraPerspective.projectionMatrix.elements.toString();
     let oM = cameraOrtho.projectionMatrix.elements.toString();
+    // console.log(pM);
+    let changerMatrix = {value: pM};
 
-    gsap.to(cameraPerspective, {
-        projectionMatrix: oM,
-        onUpdate: function () {
-            // cameraPerspective.updateProjectionMatrix();
+
+
+    gsap.to(changerMatrix, {
+        value:oM,
+        duration:1,
+        onUpdateParams: [changerMatrix],
+        onUpdate: function (value) {
+            // console.log(typeof value);
+            // console.log(typeof value.value);
+            let array = value.value.split(",");
+            console.log(array);
+            activeCamera.projectionMatrix.fromArray(array);
+            // activeCamera.updateProjectionMatrix()
+            // console.log(value);
+        },
+        onStart: function () {
+            console.log(activeCamera.projectionMatrix);
+        },
+        onComplete: function () {
+            console.log(activeCamera.projectionMatrix);
         }
     });
 }
