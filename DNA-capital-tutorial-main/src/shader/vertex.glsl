@@ -13,7 +13,7 @@ void main() {
     vUv = uv;
     vColorRandom = colorRandoms;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.);
-    //gl_PointSize = (30. * randoms + 5.) * (1.0 / -mvPosition.z)*10.0;
-    gl_PointSize = 10.0;
+    gl_PointSize = (30. * randoms + 5.) * (1.0 / -mvPosition.z)*10.0;
+//    gl_PointSize = 10.0;
     gl_Position = projectionMatrix * mvPosition;
 }

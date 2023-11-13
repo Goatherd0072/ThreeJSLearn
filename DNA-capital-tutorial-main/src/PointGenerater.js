@@ -9,7 +9,7 @@ const stats = new Stats();
 //stats.domElement:web页面上输出计算结果,一个div元素，
 document.body.appendChild(stats.domElement);
 export class ModelPoint {
-  constructor(model, size = 1, color = "#FFFFFF") {
+  constructor(model, size = 1, color = "#cc3737") {
     this.model = model;
     // this.material = this.GetPointMaterial(size, color);
     this.material = this.GetShaderMaterialDNA();
