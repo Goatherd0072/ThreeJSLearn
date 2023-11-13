@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import * as GUI from 'dat.gui'
 
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
 import * as dat from "dat.gui";
 
 let container;
@@ -17,7 +17,7 @@ const pointer = new THREE.Vector2();
 const onUpPosition = new THREE.Vector2();
 const onDownPosition = new THREE.Vector2();
 
-const geometry = new THREE.BoxGeometry( 20, 20, 20 );
+const geometry = new THREE.BoxGeometry(1, 1, 1);
 let transformControl;
 
 const ARC_SEGMENTS = 200;
@@ -35,125 +35,145 @@ const params = {
 };
 
 export {AddLine};
-var AddLine = function init(Scene,Container,Camera,Renderer) {
-    scene =Scene;
+var AddLine = function init(Scene, Container, Camera, Renderer,Controls)
+{
+    scene = Scene;
     container = Container;
     camera = Camera;
 
-    const helper = new THREE.GridHelper( 2000, 100 );
-    helper.position.y = - 199;
+    const helper = new THREE.GridHelper(2, 100);
+    helper.position.y = -199;
     helper.material.opacity = 0.25;
     helper.material.transparent = true;
-    scene.add( helper );
+    scene.add(helper);
 
     renderer = Renderer;
 
-    const gui = new  GUI.GUI();
+    const gui = new GUI.GUI();
 
-    gui.add( params, 'uniform' ).onChange( render );
-    gui.add( params, 'tension', 0, 1 ).step( 0.01 ).onChange( function ( value ) {
+    gui.add(params, 'uniform').onChange(render);
+    gui.add(params, 'tension', 0, 1).step(0.01).onChange(function (value)
+    {
 
         splines.uniform.tension = value;
         updateSplineOutline();
         render();
 
-    } );
-    gui.add( params, 'centripetal' ).onChange( render );
-    gui.add( params, 'chordal' ).onChange( render );
-    gui.add( params, 'addPoint' );
-    gui.add( params, 'removePoint' );
-    gui.add( params, 'exportSpline' );
+    });
+    gui.add(params, 'centripetal').onChange(render);
+    gui.add(params, 'chordal').onChange(render);
+    gui.add(params, 'addPoint');
+    gui.add(params, 'removePoint');
+    gui.add(params, 'exportSpline');
     gui.open();
 
+    let controls = Controls;
 
-    transformControl = new TransformControls( camera, renderer.domElement );
-    transformControl.addEventListener( 'change', render );
-    scene.add( transformControl );
+    transformControl = new TransformControls(camera, renderer.domElement);
+    transformControl.addEventListener('change', render);
+    transformControl.addEventListener('dragging-changed', function (event)
+    {
 
-    transformControl.addEventListener( 'objectChange', function () {
+        controls.enabled = !event.value;
+
+    });
+    // transformControl.size = (0.1);
+    // transformControl.s
+    scene.add(transformControl);
+
+    transformControl.addEventListener('objectChange', function ()
+    {
 
         updateSplineOutline();
 
-    } );
+    });
 
-    document.addEventListener( 'pointerdown', onPointerDown );
-    document.addEventListener( 'pointerup', onPointerUp );
-    document.addEventListener( 'pointermove', onPointerMove );
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointermove', onPointerMove);
 
     /*******
      * Curves
      *********/
 
-    for ( let i = 0; i < splinePointsLength; i ++ ) {
+    for (let i = 0; i < splinePointsLength; i++)
+    {
 
-        addSplineObject( positions[ i ] );
+        addSplineObject(positions[i]);
 
     }
 
     positions.length = 0;
 
-    for ( let i = 0; i < splinePointsLength; i ++ ) {
+    for (let i = 0; i < splinePointsLength; i++)
+    {
 
-        positions.push( splineHelperObjects[ i ].position );
+        positions.push(splineHelperObjects[i].position);
 
     }
 
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( ARC_SEGMENTS * 3 ), 3 ) );
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ARC_SEGMENTS * 3), 3));
 
-    let curve = new THREE.CatmullRomCurve3( positions );
+    let curve = new THREE.CatmullRomCurve3(positions);
     curve.curveType = 'catmullrom';
-    curve.mesh = new THREE.Line( geometry.clone(), new THREE.LineBasicMaterial( {
+    curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
         color: 0xff0000,
         opacity: 0.35
-    } ) );
+    }));
     curve.mesh.castShadow = true;
     splines.uniform = curve;
 
-    curve = new THREE.CatmullRomCurve3( positions );
+    curve = new THREE.CatmullRomCurve3(positions);
     curve.curveType = 'centripetal';
-    curve.mesh = new THREE.Line( geometry.clone(), new THREE.LineBasicMaterial( {
+    curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
         color: 0x00ff00,
         opacity: 0.35
-    } ) );
+    }));
     curve.mesh.castShadow = true;
     splines.centripetal = curve;
 
-    curve = new THREE.CatmullRomCurve3( positions );
+    curve = new THREE.CatmullRomCurve3(positions);
     curve.curveType = 'chordal';
-    curve.mesh = new THREE.Line( geometry.clone(), new THREE.LineBasicMaterial( {
+    curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
         color: 0x0000ff,
         opacity: 0.35
-    } ) );
+    }));
     curve.mesh.castShadow = true;
     splines.chordal = curve;
 
-    for ( const k in splines ) {
+    for (const k in splines)
+    {
 
-        const spline = splines[ k ];
-        scene.add( spline.mesh );
+        const spline = splines[k];
+        scene.add(spline.mesh);
 
     }
 
-    load( [ new THREE.Vector3( 289.76843686945404, 452.51481137238443, 56.10018915737797 ),
-        new THREE.Vector3( - 53.56300074753207, 171.49711742836848, - 14.495472686253045 ),
-        new THREE.Vector3( - 91.40118730204415, 176.4306956436485, - 6.958271935582161 ),
-        new THREE.Vector3( - 383.785318791128, 491.1365363371675, 47.869296953772746 ) ] );
+    load([
+        new THREE.Vector3(0, 0.515933, -50),
+        new THREE.Vector3(0, 0, -25),
+        new THREE.Vector3(-20, 0, -50),
+        new THREE.Vector3(-20, 0, -25)]);
 
     render();
 
 }
 
-function addSplineObject( position ) {
+function addSplineObject(position)
+{
 
-    const material = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } );
-    const object = new THREE.Mesh( geometry, material );
+    const material = new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff});
+    const object = new THREE.Mesh(geometry, material);
 
-    if ( position ) {
+    if (position)
+    {
 
-        object.position.copy( position );
+        object.position.copy(position);
 
-    } else {
+    }
+    else
+    {
 
         object.position.x = Math.random() * 1000 - 500;
         object.position.y = Math.random() * 600;
@@ -163,17 +183,18 @@ function addSplineObject( position ) {
 
     object.castShadow = true;
     object.receiveShadow = true;
-    scene.add( object );
-    splineHelperObjects.push( object );
+    scene.add(object);
+    splineHelperObjects.push(object);
     return object;
 
 }
 
-function addPoint() {
+function addPoint()
+{
 
-    splinePointsLength ++;
+    splinePointsLength++;
 
-    positions.push( addSplineObject().position );
+    positions.push(addSplineObject().position);
 
     updateSplineOutline();
 
@@ -181,20 +202,22 @@ function addPoint() {
 
 }
 
-function removePoint() {
+function removePoint()
+{
 
-    if ( splinePointsLength <= 4 ) {
+    if (splinePointsLength <= 4)
+    {
 
         return;
 
     }
 
     const point = splineHelperObjects.pop();
-    splinePointsLength --;
+    splinePointsLength--;
     positions.pop();
 
-    if ( transformControl.object === point ) transformControl.detach();
-    scene.remove( point );
+    if (transformControl.object === point) transformControl.detach();
+    scene.remove(point);
 
     updateSplineOutline();
 
@@ -202,20 +225,23 @@ function removePoint() {
 
 }
 
-function updateSplineOutline() {
+function updateSplineOutline()
+{
 
-    for ( const k in splines ) {
+    for (const k in splines)
+    {
 
-        const spline = splines[ k ];
+        const spline = splines[k];
 
         const splineMesh = spline.mesh;
         const position = splineMesh.geometry.attributes.position;
 
-        for ( let i = 0; i < ARC_SEGMENTS; i ++ ) {
+        for (let i = 0; i < ARC_SEGMENTS; i++)
+        {
 
-            const t = i / ( ARC_SEGMENTS - 1 );
-            spline.getPoint( t, point );
-            position.setXYZ( i, point.x, point.y, point.z );
+            const t = i / (ARC_SEGMENTS - 1);
+            spline.getPoint(t, point);
+            position.setXYZ(i, point.x, point.y, point.z);
 
         }
 
@@ -225,40 +251,46 @@ function updateSplineOutline() {
 
 }
 
-function exportSpline() {
+function exportSpline()
+{
 
     const strplace = [];
 
-    for ( let i = 0; i < splinePointsLength; i ++ ) {
+    for (let i = 0; i < splinePointsLength; i++)
+    {
 
-        const p = splineHelperObjects[ i ].position;
-        strplace.push( `new THREE.Vector3(${p.x}, ${p.y}, ${p.z})` );
+        const p = splineHelperObjects[i].position;
+        strplace.push(`new THREE.Vector3(${p.x}, ${p.y}, ${p.z})`);
 
     }
 
-    console.log( strplace.join( ',\n' ) );
-    const code = '[' + ( strplace.join( ',\n\t' ) ) + ']';
-    prompt( 'copy and paste code', code );
+    console.log(strplace.join(',\n'));
+    const code = '[' + (strplace.join(',\n\t')) + ']';
+    prompt('copy and paste code', code);
 
 }
 
-function load( new_positions ) {
+function load(new_positions)
+{
 
-    while ( new_positions.length > positions.length ) {
+    while (new_positions.length > positions.length)
+    {
 
         addPoint();
 
     }
 
-    while ( new_positions.length < positions.length ) {
+    while (new_positions.length < positions.length)
+    {
 
         removePoint();
 
     }
 
-    for ( let i = 0; i < positions.length; i ++ ) {
+    for (let i = 0; i < positions.length; i++)
+    {
 
-        positions[ i ].copy( new_positions[ i ] );
+        positions[i].copy(new_positions[i]);
 
     }
 
@@ -266,28 +298,32 @@ function load( new_positions ) {
 
 }
 
-function render() {
+function render()
+{
 
     splines.uniform.mesh.visible = params.uniform;
     splines.centripetal.mesh.visible = params.centripetal;
     splines.chordal.mesh.visible = params.chordal;
-    renderer.render( scene, camera );
+    renderer.render(scene, camera);
 
 }
 
-function onPointerDown( event ) {
+function onPointerDown(event)
+{
 
     onDownPosition.x = event.clientX;
     onDownPosition.y = event.clientY;
 
 }
 
-function onPointerUp( event ) {
+function onPointerUp(event)
+{
 
     onUpPosition.x = event.clientX;
     onUpPosition.y = event.clientY;
 
-    if ( onDownPosition.distanceTo( onUpPosition ) === 0 ) {
+    if (onDownPosition.distanceTo(onUpPosition) === 0)
+    {
 
         transformControl.detach();
         render();
@@ -296,22 +332,25 @@ function onPointerUp( event ) {
 
 }
 
-function onPointerMove( event ) {
+function onPointerMove(event)
+{
 
-    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    raycaster.setFromCamera( pointer, camera );
+    raycaster.setFromCamera(pointer, camera);
 
-    const intersects = raycaster.intersectObjects( splineHelperObjects, false );
+    const intersects = raycaster.intersectObjects(splineHelperObjects, false);
 
-    if ( intersects.length > 0 ) {
+    if (intersects.length > 0)
+    {
 
-        const object = intersects[ 0 ].object;
+        const object = intersects[0].object;
 
-        if ( object !== transformControl.object ) {
+        if (object !== transformControl.object)
+        {
 
-            transformControl.attach( object );
+            transformControl.attach(object);
 
         }
 

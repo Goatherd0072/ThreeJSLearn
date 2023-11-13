@@ -118,7 +118,7 @@ class NewScene
             this.Resize()
         })
 
-        AddLine(this.scene, this.renderer.domElement, this.camera, this.renderer);
+        AddLine(this.scene, this.renderer.domElement, this.camera, this.renderer, this.controls);
     }
 
     InitDisplay()
