@@ -31,9 +31,7 @@ var useCameraBezierMove = function bezierMoveTo(camera, path, lookAt, duration, 
             path: path,
             type: "cubic"               //贝塞尔曲线方法
         },
-        onUpdate: () => {
-            camera.lookAt(lookAt)
-        }
+
       })
 }
 export {useCameraBezierMove};
@@ -41,15 +39,12 @@ export {useCameraBezierMove};
 /**
  * 曲线运动
  */
-var useCameraCurveMove = function curveMoveTo(camera, path, lookAt, duration, easing = "none"){
+var useCameraCurveMove = function curveMoveTo(camera, path, duration, easing = "none"){
     gsap.to(camera.position, {
         duration: duration,
         ease: easing,
         motionPath: {
             path: path
-        },
-        onUpdate: () => {
-            camera.lookAt(lookAt)
         }
       })
 }

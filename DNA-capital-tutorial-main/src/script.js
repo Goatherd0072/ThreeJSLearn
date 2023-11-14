@@ -1,5 +1,6 @@
 import './style.css'
 import * as THREE from 'three'
+import {AxesHelper} from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui'
 import fragmentShader from './shader/fragment.glsl'
@@ -9,13 +10,10 @@ import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass'
 import {ShaderPass} from 'three/examples/jsm/postprocessing/ShaderPass'
 import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import {AberrationShader} from './shader/customPass.js'
-import ModelLoader from './ModelLoader.js'
-import {AxesHelper, BufferGeometry} from "three";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import gsap from "gsap";
 import ModelPoint from "./PointGenerater";
-import {useCameraCurveMove, useCameraMove, useCameraBezierMove} from "./transitionAnimation/cameraTransition";
 import {rigistGSAPPlugin} from "./composables/gsapCTRL";
 
 import {AddLine} from "./Addline";
@@ -23,26 +21,8 @@ import {AddLine} from "./Addline";
 const canvas = document.querySelector('.webgl')
 const interval = 10;
 const duration = 1;
-const CurvePath = new THREE.CurvePath();
-let moveIndex = 0;
 
-const CameraPos = [
-    {
-        "pos": {x: -23.93705034667555, y: 25.327463047026054, z: -54.60327123283831},
-        "index": 0
-    }, {
-        "pos": {x: 5.628764889684225, y: 25.67565770246139, z: -25.3449159498728},
-        "index": 1
-    }, {
-        "pos": {x: -10.925966911720845, y: 8.692456343164986, z: 17.194525955074},
-        "index": 2
-    }, {"pos": {x: 15.850353444783856, y: 7.136313628210299, z: 10.79342456836824}, "index": 3}, {
-        "pos": {
-            x: 0,
-            y: 0,
-            z: 50
-        }, "index": 3
-    }];
+let curIndex = 0;
 
 class NewScene
 {
@@ -71,48 +51,10 @@ class NewScene
         this.Update()
         this.initAxes();
         this.InitSettings();
-        // useCameraBezierMove(this.camera, [{x:0, y:0}, {x:20, y:0}, {x:30, y:50}, {x:50, y:50}], new THREE.Vector3(0, 0, 0), 2)
-        // useCameraCurveMove(this.camera, [
-        //     {x: 0, y: 0}, {x: 20, y: 0}, {x: 30, y: 50}, {
-        //         x: 50,
-        //         y: 50
-        //     }], new THREE.Vector3(10, 0, 0), 2)
-        const p1 = new THREE.Vector3(0, 0.515933, -50);
-        const p2 = new THREE.Vector3(0, 0, -25);
-        const p3 = new THREE.Vector3(-20, 0, -50);
-        const p4 = new THREE.Vector3(-20, 0, -25);
-        // 三维三次贝赛尔曲线
-        const curve1 = new THREE.CubicBezierCurve3(p1, p3, p4, p2);
-        const curve2 = new THREE.CubicBezierCurve3(
-            new THREE.Vector3(0, 0, -25),
-            new THREE.Vector3(5, 0, -25),
-            new THREE.Vector3(5, 0, -15),
-            new THREE.Vector3(0, 0, -15)
-        )
-        const curve3 = new THREE.CubicBezierCurve3(
-            new THREE.Vector3(0, 0, -15),
-            new THREE.Vector3(-5, 0, -15),
-            new THREE.Vector3(-5, 0, -5),
-            new THREE.Vector3(0, 0, -5)
-        )
-        const curve4 = new THREE.CubicBezierCurve3(
-            new THREE.Vector3(0, 0, -5),
-            new THREE.Vector3(5, 0, -5),
-            new THREE.Vector3(5, 0, 5),
-            new THREE.Vector3(0, 0, 5)
-        )
+        this.InitLineData();
 
 
-        // const CurvePath = new THREE.CurvePath();
-        CurvePath.add(curve1);
-        CurvePath.add(curve2);
-        CurvePath.add(curve3);
-        CurvePath.add(curve4);
-
-        const points = CurvePath.getPoints(500);
-        const pathMesh = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0x00ffff}));
-        this.scene.add(pathMesh);
-        console.log(CurvePath);
+        // console.log(CurvePath);
         window.addEventListener('resize', () =>
         {
             this.Resize()
@@ -184,6 +126,75 @@ class NewScene
 
     }
 
+    InitLineData()
+    {
+        const CurvePath = new THREE.CurvePath();
+        const CurvePath_Lookat = new THREE.CurvePath();
+        this.MovePath = {MoveCurve: CurvePath, LookAtCurve: CurvePath_Lookat};
+
+        // LookAt line
+        // const curveL1 = new THREE.CatmullRomCurve3(
+        //     [
+        //         new THREE.Vector3(0.018296016037411943, 2.2793849534441146, -30.580507151294213),
+        //         new THREE.Vector3(-1.2834385134549515, -1.2365950207867376, -20.884463506281563),
+        //         new THREE.Vector3(2.375688480045702, 0.379855534924074, -10.29535403209438),
+        //         new THREE.Vector3(0.049298499412910535, -0.2356612523274516, 2.8617929692406694)
+        //     ]
+        // )
+        const curveL1 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0.9179262718514771, 2.0484429648946505, -30.719796594891754),
+            new THREE.Vector3(-2.2876584333567522, 1.3956816956215605, -28.446104780969673),
+            new THREE.Vector3(-3.1031187907201754, 0.7752661180468414, -23.899774377865114),
+            new THREE.Vector3(-0.6072034921274962, -1.4025256152748582, -20.280445161167417)])
+
+        CurvePath_Lookat.add(curveL1);
+        const pointsL = CurvePath_Lookat.getPoints(500);
+        const pathMeshL = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pointsL), new THREE.LineBasicMaterial({color: "#c6d410"}));
+        this.scene.add(pathMeshL);
+
+        const curve1 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(2.4039321284290622, 4.2314712081787675, -40.916574482678364),
+            new THREE.Vector3(-4.39991708298793, -2.764719543948928, -32.8892993216464),
+            new THREE.Vector3(4.292829421584311, 0.10628825524337637, -26.324900740344948),
+            new THREE.Vector3(8.467181855600257, -0.046905493191901626, -20.0248854235066)]);
+
+        const curve2 = new THREE.CatmullRomCurve3(
+            [
+                new THREE.Vector3(0, 0, -25),
+                new THREE.Vector3(5, 0, -25),
+                new THREE.Vector3(5, 0, -15),
+                new THREE.Vector3(0, 0, -15)]
+        )
+        const curve3 = new THREE.CatmullRomCurve3(
+            [
+                new THREE.Vector3(0, 0, -15),
+                new THREE.Vector3(-5, 0, -15),
+                new THREE.Vector3(-5, 0, -5),
+                new THREE.Vector3(0, 0, -5),
+                new THREE.Vector3(5, 0, -5),
+                new THREE.Vector3(5, 0, 5),
+                new THREE.Vector3(0, 0, 5)]
+        )
+        const curve4 = new THREE.CubicBezierCurve3(
+            new THREE.Vector3(0, 0, -5),
+            new THREE.Vector3(5, 0, -5),
+            new THREE.Vector3(5, 0, 5),
+            new THREE.Vector3(0, 0, 5)
+        )
+
+
+        // Move Line
+        CurvePath.add(curve1);
+        CurvePath.add(curve2);
+        CurvePath.add(curve3);
+        // CurvePath.add(curve4);
+
+        const points = CurvePath.getPoints(500);
+        const pathMesh = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0x00ffff}));
+        this.scene.add(pathMesh);
+
+    }
+
     InitRenderer()
     {
         this.renderer = new THREE.WebGLRenderer({
@@ -226,21 +237,28 @@ class NewScene
             restore: this.Restore.bind(this),
             expand: this.Expand.bind(this),
             CameraPos: this.DebugCameraInfo.bind(this),
-            Rotation: this.Rotation.bind(this),
-            Move: this.Move.bind(this)
+            Rotation: this.SetAnimation.bind(this),
+            Rotation1: this.SetAnimation.bind(this, 0),
+            Rotation2: this.SetAnimation.bind(this, 1),
+            Rotation3: this.SetAnimation.bind(this, 2),
+
         }
         this.gui = new dat.GUI();
-        this.gui.add(this.settings, 'enabled')
-        this.gui.add(this.settings, 'progress', 0, 1, 0.01)
-        this.gui.add(this.settings, 'bloomStrength', 0, 10, 0.01)
-        this.gui.add(this.settings, 'bloomRadius', 0, 10, 0.01)
-        this.gui.add(this.settings, 'bloomThreshold', 0, 10, 0.01)
-        this.gui.add(this.settings, 'restore');
-        this.gui.add(this.settings, 'expand');
-        this.gui.add(this.settings, 'CameraPos');
-        this.gui.add(this.settings, 'Rotation');
-        this.gui.add(this.settings, 'Move');
-        this.gui.add(this.controls, 'enabled');
+        let post = this.gui.addFolder('PostProcessing');
+        let CameraCtrl = this.gui.addFolder('CameraCtrl');
+        post.add(this.settings, 'enabled').name("Post Enabled")
+        post.add(this.settings, 'progress', 0, 1, 0.01)
+        post.add(this.settings, 'bloomStrength', 0, 10, 0.01)
+        post.add(this.settings, 'bloomRadius', 0, 10, 0.01)
+        post.add(this.settings, 'bloomThreshold', 0, 10, 0.01)
+        CameraCtrl.add(this.settings, 'restore');
+        CameraCtrl.add(this.settings, 'expand');
+        CameraCtrl.add(this.settings, 'CameraPos');
+        CameraCtrl.add(this.settings, 'Rotation');
+        CameraCtrl.add(this.controls, 'enabled').name("OrbitControls Enabled");
+        CameraCtrl.add(this.settings, 'Rotation1');
+        CameraCtrl.add(this.settings, 'Rotation2');
+        CameraCtrl.add(this.settings, 'Rotation3');
 
         // this.gui.add(this.camera, 'fov', 1, 180, 0.01);
         // this.gui.add(this.model_Logos,"z",0,100,0.01);
@@ -314,7 +332,7 @@ class NewScene
 
     initAxes()
     {
-        let axes = new AxesHelper(100);
+        let axes = new AxesHelper(-100);
         axes.position.set(0, 0, 0);
         this.scene.add(axes);
     }
@@ -323,27 +341,20 @@ class NewScene
     {
         let model_Logo = [];
         let that = this;
-        this.GLTFLoader.load("./model/logo60p_pointCenter.gltf", (gltf) =>
+        this.GLTFLoader.load("./model/Logo_p60_newnew.gltf", (gltf) =>
         {
             console.log(gltf);
 
             for (let i = 0; i < gltf.scene.children.length; i++)
             {
-                console.log(model_Logo);
                 model_Logo.push(new ModelPoint(gltf.scene.children[i], 0.025, "#00ABD1"));
                 //model_Logo[i].geometry.position.set(0, 0, 0);
-                console.log(typeof model_Logo[i].geometry)
                 model_Logo[i].geometry.scale.set(0.1, 0.1, 0.1);
-
                 Scene.add(model_Logo[i].geometry);
             }
             that.models = (model_Logo);
-            console.log(that.models);
-            // console.log(that.models[1].geometry.position);
-            let indax = CameraPos[3].index;
-            let lookAt = new THREE.Vector3(that.models[indax].geometry.position.x, that.models[indax].geometry.position.y, that.models[indax].geometry.position.z);
-            that.camera.lookAt(lookAt);
-            console.log(lookAt);
+            this.Expand();
+            // console.log(that.models);
         });
     }
 
@@ -354,25 +365,34 @@ class NewScene
         console.log(this.camera);
     }
 
-    Rotation(index)
+    SetAnimation(index)
     {
-        // console.log(CurvePath.curves)
-        let path = GetXYZArray(CurvePath.curves[index]);
-        // console.log(path);
-        let lookat = this.models[index].geometry.position;
-        console.log(lookat);
-        useCameraBezierMove(this.camera, path, lookat, 1);
-
-    }
-
-    Move()
-    {
-        this.Rotation(moveIndex);
-        moveIndex++;
-        if (moveIndex > 3)
+        let path = [];
+        if (index >= curIndex)
         {
-            moveIndex = 0;
+            for (let i = curIndex; i <= index; i++)
+            {
+                // let isReject = i > 0;
+                GetArrayItems(path, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
+            }
         }
+        else if (index < curIndex)
+        {
+            for (let i = curIndex; i >= index; i--)
+            {
+                // let isReject = i < curIndex;
+                GetArrayItems(path, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
+            }
+        }
+
+        // console.log(CurvePath.curves)
+        //  path = GetXYZArray(CurvePath.curves[index]);
+
+        useCameraCurveMove(this.camera, path, 5);
+        CameraLookAtMove(this.MovePath.LookAtCurve.curves, index, this.camera);
+        // this.CameraLookAtMove(this.MovePath.LookAtCurve.curves[index]);
+        curIndex = index;
+        console.log(curIndex);
     }
 
 }
@@ -384,15 +404,70 @@ window.addEventListener('DOMContentLoaded', () =>
     _APP = new NewScene()
 })
 
+function useCameraCurveMove(camera, path, duration, easing = "none")
+{
+    gsap.to(camera.position, {
+        duration: duration,
+        ease: easing,
+        motionPath: {
+            path: path
+        }
+    })
+}
+
+function CameraLookAtMove(curve, index, camera)
+{
+    console.log(curve, camera, index)
+    index = 0;
+    let curves = curve[index];
+    // const points = curve.getPoints(500);
+    let progress = {value: 0};
+    let cam = camera;
+
+    gsap.to(progress, {
+        value: 1,
+        duration: 5,
+        overwrite: true,
+        onUpdateParams: [progress],
+        onUpdate({value})
+        {
+            let tempV3 = new THREE.Vector3();
+            curves.getPoint(value, tempV3);
+            // let lookat = new THREE.Vector3(0, 0, 0);
+            // console.log(tempV3)
+            cam.lookAt(tempV3);
+        }
+    });
+}
+
 function GetXYZArray(curve)
 {
+    console.log(curve);
     const path = [];
     // const points = curve.()
-
-    path.push({x: curve.v0.x, y: curve.v0.y, z: curve.v0.z});
-    path.push({x: curve.v1.x, y: curve.v1.y, z: curve.v1.z});
-    path.push({x: curve.v2.x, y: curve.v2.y, z: curve.v2.z});
-    path.push({x: curve.v3.x, y: curve.v3.y, z: curve.v3.z});
+    for (let i = 0; i < curve.points.length; i++)
+    {
+        path.push({x: curve.points[i].x, y: curve.points[i].y, z: curve.points[i].z});
+    }
+    //
+    // path.push({x: curve.v0.x, y: curve.v0.y, z: curve.v0.z});
+    // path.push({x: curve.v1.x, y: curve.v1.y, z: curve.v1.z});
+    // path.push({x: curve.v2.x, y: curve.v2.y, z: curve.v2.z});
+    // path.push({x: curve.v3.x, y: curve.v3.y, z: curve.v3.z});
 
     return path;
+}
+
+function GetArrayItems(gArray, fromA)
+{
+
+    for (let i = 0; i < fromA.length; i++)
+    {
+        // if (isReject && i === 0)
+        // {
+        //     continue;
+        // }
+        gArray.push(fromA[i]);
+    }
+    return gArray;
 }
