@@ -23,6 +23,7 @@ const interval = 10;
 const duration = 1;
 
 let curIndex = 0;
+const timeline = gsap.timeline({paused: true})
 
 class NewScene
 {
@@ -42,8 +43,9 @@ class NewScene
         this.AddModel(this.scene);
 
         // this.InitDisplay()
+        this.InitCamera();
+        this.InitLineData();
 
-        this.InitCamera()
         this.InitRenderer()
         this.InitPostProcessing()
         this.InitLights()
@@ -51,7 +53,6 @@ class NewScene
         this.Update()
         this.initAxes();
         this.InitSettings();
-        this.InitLineData();
 
 
         // console.log(CurvePath);
@@ -142,38 +143,53 @@ class NewScene
         //     ]
         // )
         const curveL1 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0.9179262718514771, 2.0484429648946505, -30.719796594891754),
-            new THREE.Vector3(-2.2876584333567522, 1.3956816956215605, -28.446104780969673),
-            new THREE.Vector3(-3.1031187907201754, 0.7752661180468414, -23.899774377865114),
-            new THREE.Vector3(-0.6072034921274962, -1.4025256152748582, -20.280445161167417)])
+            new THREE.Vector3(-1.5216947019223503, 1.9934981561189686, -30.719796594891754),
+            new THREE.Vector3(-3.7254810456497323, 0.7645521694115653, -25.6455492797792),
+            new THREE.Vector3(-4.850371170770711, -0.7081444126282042, -22.801151618538267),
+            new THREE.Vector3(-6.100595920156753, -1.3050611269527588, -19.900969537728894)]);
+
+        const curveL2 = new THREE.CatmullRomCurve3(
+            [
+                new THREE.Vector3(-6.100595920156753, -1.3050611269527588, -19.900969537728894),
+                new THREE.Vector3(-2.0159467333131094, 10.849080805653575, -24.162092382730552),
+                new THREE.Vector3(10.990080214548204, 9.282728930241298, -17.519053022510647),
+                new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182)]);
+
+        const curveL3 = new THREE.CatmullRomCurve3(
+            [
+                new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182),
+                new THREE.Vector3(-36.87442966713062, -25.08096271089035, -25.819144628168452),
+                new THREE.Vector3(-47.273211458383166, -14.21024783407686, -46.12534810140365),
+                new THREE.Vector3(-31.091570506994728, -6.701073758943924, -50.967750131548186),
+                new THREE.Vector3(0, 0, -50)]
+        );
 
         CurvePath_Lookat.add(curveL1);
+        CurvePath_Lookat.add(curveL2);
+        CurvePath_Lookat.add(curveL3);
         const pointsL = CurvePath_Lookat.getPoints(500);
         const pathMeshL = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pointsL), new THREE.LineBasicMaterial({color: "#c6d410"}));
-        this.scene.add(pathMeshL);
+
 
         const curve1 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(2.4039321284290622, 4.2314712081787675, -40.916574482678364),
-            new THREE.Vector3(-4.39991708298793, -2.764719543948928, -32.8892993216464),
-            new THREE.Vector3(4.292829421584311, 0.10628825524337637, -26.324900740344948),
-            new THREE.Vector3(8.467181855600257, -0.046905493191901626, -20.0248854235066)]);
+            new THREE.Vector3(-18.630205576939236, 3.174001195723268, -45.492953175042096),
+            new THREE.Vector3(-15.840320969469527, -2.6952578069203037, -38.23333225190104),
+            new THREE.Vector3(3.6724346806386032, -3.8010129279502953, -22.457352490864338),
+            new THREE.Vector3(27.373249169653516, 0.8586995416909649, -25.758425932212745)]);
 
         const curve2 = new THREE.CatmullRomCurve3(
             [
-                new THREE.Vector3(0, 0, -25),
-                new THREE.Vector3(5, 0, -25),
-                new THREE.Vector3(5, 0, -15),
-                new THREE.Vector3(0, 0, -15)]
+                new THREE.Vector3(27.373249169653516, 0.8586995416909649, -25.758425932212745),
+                new THREE.Vector3(9.909582401881716, 4.855838497697632, -9.01427271125332),
+                new THREE.Vector3(-3.72108146588562, 4.847023905775702, 0.9647526520987912),
+                new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553)]
         )
         const curve3 = new THREE.CatmullRomCurve3(
             [
-                new THREE.Vector3(0, 0, -15),
-                new THREE.Vector3(-5, 0, -15),
-                new THREE.Vector3(-5, 0, -5),
-                new THREE.Vector3(0, 0, -5),
-                new THREE.Vector3(5, 0, -5),
-                new THREE.Vector3(5, 0, 5),
-                new THREE.Vector3(0, 0, 5)]
+                new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553),
+                new THREE.Vector3(-26.733974751625517, 0.9504425493265393, 26.557956098924738),
+                new THREE.Vector3(-15.763990762772277, 0.9337524736442688, 39.31175959601513),
+                new THREE.Vector3(0, 0, 50)]
         )
         const curve4 = new THREE.CubicBezierCurve3(
             new THREE.Vector3(0, 0, -5),
@@ -191,8 +207,20 @@ class NewScene
 
         const points = CurvePath.getPoints(500);
         const pathMesh = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0x00ffff}));
+        this.scene.add(pathMeshL);
         this.scene.add(pathMesh);
 
+        let aniArray = this.SetAnimation(0);
+        console.log( aniArray[0]);
+        timeline.add(aniArray[0], 0);
+        timeline.add(aniArray[1], 0);
+
+        console.log(timeline)
+        window.addEventListener("click",()=>{
+
+        })
+        // timeline.play();
+        // Timeline
     }
 
     InitRenderer()
@@ -204,20 +232,29 @@ class NewScene
         this.renderer.setClearColor(0x000000, 1)
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setSize(window.innerWidth, window.innerHeight)
-        //this.renderer.render(this.scene, this.camera)
+        this.renderer.render(this.scene, this.camera)
     }
 
     InitCamera()
     {
-        this.camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 0.1, 1000)
+        this.camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 1, 1000)
         // this.camera = new THREE.OrthographicCamera(-window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 0.1, 1000)
         // this.camera.viewport = new THREE.Vector4(0, 0, 1000, 1000)
         // this.camera.position.set(0, 0, 50)//
         // this.camera.position.set(CameraPos[3].pos.x, CameraPos[3].pos.y, CameraPos[3].pos.z);
         // this.camera.lookAt(0, 0, -15);
-        this.camera.position.set(-1, 3, -50)
+        // this.camera.position.set(-1, 3, -50)
+        // let camPos = this.MovePath.MoveCurve.curves[0].getPoint(0);
+        // let camLook = this.MovePath.LookAtCurve.curves[0].getPoint(0);
+        // console.log(camPos, camLook);
         this.scene.add(this.camera)
+        this.camera.position.set(-18.630205576939236, 3.174001195723268, -45.492953175042096);
+        this.camera.lookAt(-1.5216947019223503, 1.9934981561189686, -30.719796594891754);
+        // this.camera.position.set(-4.388497130267792, 2.8820619964812373, -50.870941259502025);
+        // this.camera.lookAt(0, 0, -15);
+
     }
 
     InitLights()
@@ -241,6 +278,23 @@ class NewScene
             Rotation1: this.SetAnimation.bind(this, 0),
             Rotation2: this.SetAnimation.bind(this, 1),
             Rotation3: this.SetAnimation.bind(this, 2),
+            LookAt1: () =>
+            {
+                this.camera.lookAt(0, 0, -15);
+            },
+            LookAt2: () =>
+            {
+                this.camera.lookAt(0, 0, -55);
+            },
+            LookAt3: () =>
+            {
+                this.camera.lookAt(0, 0, -100);
+            },
+            Timeline1: () =>
+            {
+                console.log(timeline);
+                timeline.play();
+            }
 
         }
         this.gui = new dat.GUI();
@@ -254,11 +308,14 @@ class NewScene
         CameraCtrl.add(this.settings, 'restore');
         CameraCtrl.add(this.settings, 'expand');
         CameraCtrl.add(this.settings, 'CameraPos');
-        CameraCtrl.add(this.settings, 'Rotation');
         CameraCtrl.add(this.controls, 'enabled').name("OrbitControls Enabled");
         CameraCtrl.add(this.settings, 'Rotation1');
         CameraCtrl.add(this.settings, 'Rotation2');
         CameraCtrl.add(this.settings, 'Rotation3');
+        CameraCtrl.open();
+
+        CameraCtrl.add(this.settings, 'Timeline1');
+
 
         // this.gui.add(this.camera, 'fov', 1, 180, 0.01);
         // this.gui.add(this.model_Logos,"z",0,100,0.01);
@@ -297,10 +354,18 @@ class NewScene
 
     Resize()
     {
-        this.camera.aspect = window.innerWidth / window.innerHeight
-        this.camera.updateProjectionMatrix()
-        this.renderer.setSize(window.innerWidth, window.innerHeight)
-        this.composer.setSize(window.innerWidth, window.innerHeight)
+        // let width = canvas.width;
+        // let height = canvas.height;
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
+        this.composer.setSize(width, height);
+        // this.camera.aspect = window.innerWidth / window.innerHeight
+        // this.camera.updateProjectionMatrix()
+        // this.renderer.setSize(window.innerWidth, window.innerHeight)
+        // this.composer.setSize(window.innerWidth, window.innerHeight)
     }
 
     Update()
@@ -367,13 +432,16 @@ class NewScene
 
     SetAnimation(index)
     {
-        let path = [];
+        let path_M = [];
+        let path_L = [];
+
         if (index >= curIndex)
         {
             for (let i = curIndex; i <= index; i++)
             {
                 // let isReject = i > 0;
-                GetArrayItems(path, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
+                GetArrayItems(path_M, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
+                path_L = this.MovePath.LookAtCurve.curves[i].getPoints(this.MovePath.LookAtCurve.curves[i].getLength())
             }
         }
         else if (index < curIndex)
@@ -381,18 +449,21 @@ class NewScene
             for (let i = curIndex; i >= index; i--)
             {
                 // let isReject = i < curIndex;
-                GetArrayItems(path, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
+                GetArrayItems(path_M, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
+                path_L = this.MovePath.LookAtCurve.curves[i].getPoints(this.MovePath.LookAtCurve.curves[i].getLength());
             }
         }
 
         // console.log(CurvePath.curves)
-        //  path = GetXYZArray(CurvePath.curves[index]);
+        //  path_M = GetXYZArray(CurvePath.curves[index]);
 
-        useCameraCurveMove(this.camera, path, 5);
-        CameraLookAtMove(this.MovePath.LookAtCurve.curves, index, this.camera);
+        let MoveA = useCameraCurveMove(this.camera, path_M, 5);
+        let LookA = CameraLookAtMove(this.camera, path_L, 5);
         // this.CameraLookAtMove(this.MovePath.LookAtCurve.curves[index]);
         curIndex = index;
         console.log(curIndex);
+
+        return [MoveA, LookA];
     }
 
 }
@@ -404,31 +475,40 @@ window.addEventListener('DOMContentLoaded', () =>
     _APP = new NewScene()
 })
 
-function useCameraCurveMove(camera, path, duration, easing = "none")
+function useCameraCurveMove(camera, path, duration, easing = "expo.inOut")
 {
-    gsap.to(camera.position, {
+    console.log(camera)
+    return gsap.to(camera.position, {
         duration: duration,
         ease: easing,
+        overwrite: true,
+        // paused: true,
         motionPath: {
             path: path
         }
-    })
+    });
 }
 
-function CameraLookAtMove(curve, index, camera)
+function CameraLookAtMove(camera, curve, duration)
 {
-    console.log(curve, camera, index)
-    index = 0;
-    let curves = curve[index];
-    // const points = curve.getPoints(500);
+    let curves = new THREE.CatmullRomCurve3(curve);
     let progress = {value: 0};
     let cam = camera;
 
-    gsap.to(progress, {
+    return gsap.to(progress, {
         value: 1,
-        duration: 5,
+        duration: duration,
         overwrite: true,
+        ease: "power4.inOut",
+        // paused: true,
         onUpdateParams: [progress],
+        // onStart()
+        // {
+        //     console.log(curves);
+        //     let al = new THREE.Vector3();
+        //     curves.getPoint(0.45, al);
+        //     console.log(al);
+        // },
         onUpdate({value})
         {
             let tempV3 = new THREE.Vector3();
@@ -442,7 +522,6 @@ function CameraLookAtMove(curve, index, camera)
 
 function GetXYZArray(curve)
 {
-    console.log(curve);
     const path = [];
     // const points = curve.()
     for (let i = 0; i < curve.points.length; i++)
@@ -460,7 +539,6 @@ function GetXYZArray(curve)
 
 function GetArrayItems(gArray, fromA)
 {
-
     for (let i = 0; i < fromA.length; i++)
     {
         // if (isReject && i === 0)

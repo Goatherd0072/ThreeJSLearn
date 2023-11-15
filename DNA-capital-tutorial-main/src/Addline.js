@@ -31,11 +31,11 @@ const params = {
     chordal: true,
     addPoint: addPoint,
     removePoint: removePoint,
-    exportSpline: exportSpline
+    exportSpline: exportSpline,
 };
 
 export {AddLine};
-var AddLine = function init(Scene, Container, Camera, Renderer,Controls)
+var AddLine = function init(Scene, Container, Camera, Renderer, Controls)
 {
     scene = Scene;
     container = Container;
@@ -65,7 +65,7 @@ var AddLine = function init(Scene, Container, Camera, Renderer,Controls)
     gui.add(params, 'addPoint');
     gui.add(params, 'removePoint');
     gui.add(params, 'exportSpline');
-    gui.open();
+    gui.close();
 
     let controls = Controls;
 
@@ -150,11 +150,12 @@ var AddLine = function init(Scene, Container, Camera, Renderer,Controls)
 
     }
 
-    load([
-        new THREE.Vector3(0, 0.515933, -50),
-        new THREE.Vector3(0, 0, -25),
-        new THREE.Vector3(-20, 0, -50),
-        new THREE.Vector3(-20, 0, -25)]);
+    load(
+        [new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182),
+            new THREE.Vector3(-36.87442966713062, -25.08096271089035, -25.819144628168452),
+            new THREE.Vector3(-47.273211458383166, -14.21024783407686, -46.12534810140365),
+            new THREE.Vector3(-31.091570506994728, -6.701073758943924, -50.967750131548186),
+            new THREE.Vector3(0, 0, -50)]);
 
     render();
 
@@ -205,7 +206,7 @@ function addPoint()
 function removePoint()
 {
 
-    if (splinePointsLength <= 4)
+    if (splinePointsLength <= 2)
     {
 
         return;

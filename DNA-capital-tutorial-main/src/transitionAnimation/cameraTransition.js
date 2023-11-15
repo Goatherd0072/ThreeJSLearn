@@ -28,7 +28,7 @@ var useCameraBezierMove = function bezierMoveTo(camera, path, lookAt, duration, 
         duration: duration,
         ease: easing,
         motionPath: {
-            path: path,
+            path: 菜单cd ,
             type: "cubic"               //贝塞尔曲线方法
         },
 
