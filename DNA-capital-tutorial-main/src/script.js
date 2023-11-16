@@ -20,12 +20,12 @@ import {AddLine} from "./Addline";
 
 const canvas = document.querySelector('.webgl')
 const interval = 10;
-const duration = 1;
-
+const duration = 5;
+let isExpand = false;
 let curIndex = 0;
 const timeline = gsap.timeline({paused: true})
 
-class NewScene
+class LogoAnimation
 {
     constructor()
     {
@@ -142,27 +142,24 @@ class NewScene
         //         new THREE.Vector3(0.049298499412910535, -0.2356612523274516, 2.8617929692406694)
         //     ]
         // )
-        const curveL1 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-1.5216947019223503, 1.9934981561189686, -30.719796594891754),
-            new THREE.Vector3(-3.7254810456497323, 0.7645521694115653, -25.6455492797792),
-            new THREE.Vector3(-4.850371170770711, -0.7081444126282042, -22.801151618538267),
-            new THREE.Vector3(-6.100595920156753, -1.3050611269527588, -19.900969537728894)]);
-
-        const curveL2 = new THREE.CatmullRomCurve3(
+        const curveL1 = new THREE.CatmullRomCurve3(
             [
-                new THREE.Vector3(-6.100595920156753, -1.3050611269527588, -19.900969537728894),
-                new THREE.Vector3(-2.0159467333131094, 10.849080805653575, -24.162092382730552),
-                new THREE.Vector3(10.990080214548204, 9.282728930241298, -17.519053022510647),
-                new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182)]);
+                new THREE.Vector3(-1.5216947019223503, 1.9934981561189686, -30.719796594891754),
+                new THREE.Vector3(-3.373181666839843, 0.8052435968169651, -25.942288974633406),
+                new THREE.Vector3(-3.725351863117192, -0.8844262711772514, -23.08571152170186),
+                new THREE.Vector3(-1.7595242068216166, -1.5109388031436028, -20.310360286933815)]);
 
-        const curveL3 = new THREE.CatmullRomCurve3(
-            [
-                new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182),
-                new THREE.Vector3(-36.87442966713062, -25.08096271089035, -25.819144628168452),
-                new THREE.Vector3(-47.273211458383166, -14.21024783407686, -46.12534810140365),
-                new THREE.Vector3(-31.091570506994728, -6.701073758943924, -50.967750131548186),
-                new THREE.Vector3(0, 0, -50)]
-        );
+        const curveL2 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-1.7595242068216166, -1.5109388031436028, -20.310360286933815),
+            new THREE.Vector3(4.681056974816118, -2.81753551974232, -26.258110976461797),
+            new THREE.Vector3(10.31067964758566, -1.7749742772106745, -20.452094802134656),
+            new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182)]);
+
+        const curveL3 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(3.093172717244061, 0.1665159282835209, -12.230508810485986),
+            new THREE.Vector3(-0.10959144827232992, -0.8531798190742748, -13.29716892428268),
+            new THREE.Vector3(0.08479965123167776, -1.3592394669421424, -28.249941694738066),
+            new THREE.Vector3(0, 0, -50)]);
 
         CurvePath_Lookat.add(curveL1);
         CurvePath_Lookat.add(curveL2);
@@ -173,54 +170,119 @@ class NewScene
 
         const curve1 = new THREE.CatmullRomCurve3([
             new THREE.Vector3(-18.630205576939236, 3.174001195723268, -45.492953175042096),
-            new THREE.Vector3(-15.840320969469527, -2.6952578069203037, -38.23333225190104),
-            new THREE.Vector3(3.6724346806386032, -3.8010129279502953, -22.457352490864338),
-            new THREE.Vector3(27.373249169653516, 0.8586995416909649, -25.758425932212745)]);
+            new THREE.Vector3(-9.895740083175333, -3.7373444717866944, -30.023613362420154),
+            new THREE.Vector3(20.45874157123685, -1.5049265553396705, -24.027488510699396),
+            new THREE.Vector3(15.003953396681984, 3.602786273550077, -13.339936494625313)]);
 
-        const curve2 = new THREE.CatmullRomCurve3(
-            [
-                new THREE.Vector3(27.373249169653516, 0.8586995416909649, -25.758425932212745),
-                new THREE.Vector3(9.909582401881716, 4.855838497697632, -9.01427271125332),
-                new THREE.Vector3(-3.72108146588562, 4.847023905775702, 0.9647526520987912),
-                new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553)]
-        )
-        const curve3 = new THREE.CatmullRomCurve3(
-            [
-                new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553),
-                new THREE.Vector3(-26.733974751625517, 0.9504425493265393, 26.557956098924738),
-                new THREE.Vector3(-15.763990762772277, 0.9337524736442688, 39.31175959601513),
-                new THREE.Vector3(0, 0, 50)]
-        )
-        const curve4 = new THREE.CubicBezierCurve3(
-            new THREE.Vector3(0, 0, -5),
-            new THREE.Vector3(5, 0, -5),
-            new THREE.Vector3(5, 0, 5),
-            new THREE.Vector3(0, 0, 5)
-        )
-
+        const curve2 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(15.003953396681984, 3.602786273550077, -13.339936494625313),
+            new THREE.Vector3(9.909582401881716, 4.855838497697632, -9.01427271125332),
+            new THREE.Vector3(-3.72108146588562, 4.847023905775702, 0.9647526520987912),
+            new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553)
+        ])
+        const curve3 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553),
+            new THREE.Vector3(-26.733974751625517, 0.9504425493265393, 26.557956098924738),
+            new THREE.Vector3(-15.763990762772277, 0.9337524736442688, 39.31175959601513),
+            new THREE.Vector3(0, 0, 50)])
 
         // Move Line
         CurvePath.add(curve1);
         CurvePath.add(curve2);
         CurvePath.add(curve3);
         // CurvePath.add(curve4);
-
         const points = CurvePath.getPoints(500);
         const pathMesh = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0x00ffff}));
         this.scene.add(pathMeshL);
         this.scene.add(pathMesh);
 
-        let aniArray = this.SetAnimation(0);
-        console.log( aniArray[0]);
-        timeline.add(aniArray[0], 0);
-        timeline.add(aniArray[1], 0);
 
-        console.log(timeline)
-        window.addEventListener("click",()=>{
+        let moveP = GetXYZArray(GetPathArray(this.MovePath.MoveCurve));
+        let lookP = (GetPathArray(this.MovePath.LookAtCurve));
 
-        })
-        // timeline.play();
-        // Timeline
+        // console.log(moveP);
+        // exportSpline(lookP);
+        // const CamPath = {
+        //     MoveCurve: [
+        //         {
+        //             "x": -18.630205576939236, "y": 3.174001195723268, "z": -45.492953175042096
+        //         }, {
+        //             "x": -15.840320969469527, "y": -2.6952578069203037, "z": -38.23333225190104
+        //         }, {
+        //             "x": 3.6724346806386032, "y": -3.8010129279502953, "z": -22.457352490864338
+        //         }, {
+        //             "x": 27.373249169653516, "y": 0.8586995416909649, "z": -25.758425932212745
+        //         }, {
+        //             "x": 9.909582401881716, "y": 4.855838497697632, "z": -9.01427271125332
+        //         }, {
+        //             "x": -3.72108146588562, "y": 4.847023905775702, "z": 0.9647526520987912
+        //         }, {
+        //             "x": -29.55174112366012, "y": 1.9736646378644251, "z": 10.59882117230553
+        //         }, {
+        //             "x": -26.733974751625517, "y": 0.9504425493265393, "z": 26.557956098924738
+        //         }, {
+        //             "x": -15.763990762772277, "y": 0.9337524736442688, "z": 39.31175959601513
+        //         }, {
+        //             "x": 0, "y": 0, "z": 50
+        //         }],
+        //     LookAtCurve: new THREE.CatmullRomCurve3([new THREE.Vector3(-1.5216947019223503, 1.9934981561189686, -30.719796594891754),
+        //         new THREE.Vector3(-3.7254810456497323, 0.7645521694115653, -25.6455492797792),
+        //         new THREE.Vector3(-4.850371170770711, -0.7081444126282042, -22.801151618538267),
+        //         new THREE.Vector3(-6.100595920156753, -1.3050611269527588, -19.900969537728894),
+        //         new THREE.Vector3(-6.100595920156753, -1.3050611269527588, -19.900969537728894),
+        //         new THREE.Vector3(-2.0159467333131094, 10.849080805653575, -24.162092382730552),
+        //         new THREE.Vector3(10.990080214548204, 9.282728930241298, -17.519053022510647),
+        //         new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182),
+        //         new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182),
+        //         new THREE.Vector3(-36.87442966713062, -25.08096271089035, -25.819144628168452),
+        //         new THREE.Vector3(-47.273211458383166, -14.21024783407686, -46.12534810140365),
+        //         new THREE.Vector3(-31.091570506994728, -6.701073758943924, -50.967750131548186),
+        //         new THREE.Vector3(0, 0, -50)])
+        // };
+        //
+        // moveP = CamPath.MoveCurve;
+        // lookP = CamPath.LookAtCurve;
+        // console.log(moveP);
+        // exportSpline(lookP);
+        function exportSpline(Curve3)
+        {
+
+            const strplace = [];
+
+            for (let i = 0; i < Curve3.points.length; i++)
+            {
+
+                const p = Curve3.points[i];
+                strplace.push(`new THREE.Vector3(${p.x}, ${p.y}, ${p.z})`);
+
+            }
+
+            console.log(strplace.join(',\n'));
+            const code = '[' + (strplace.join(',\n\t')) + ']';
+            prompt('copy and paste code', code);
+
+        }
+
+        // console.log(moveP);
+        // const ppp = moveP.getPoints(5000);
+        // const pathMeshP = new THREE.Line(new THREE.BufferGeometry().setFromPoints(ppp), new THREE.LineBasicMaterial({color: "#af0101"}));
+        // this.scene.add(pathMeshP);
+        const cam = this.camera;
+        timeline.to(cam.position, {
+            duration: 10, ease: "none", motionPath: {
+                path: moveP
+            }, onUpdate()
+            {
+                // console.log(this.progress());
+                let tempV3 = new THREE.Vector3();
+                lookP.getPoint(this.progress(), tempV3);
+                cam.lookAt(tempV3);
+            },
+        }, 0);
+        timeline.addPause(2.5);
+        timeline.addPause(5);
+        timeline.addPause(7.5);
+        timeline.addPause(10);
     }
 
     InitRenderer()
@@ -265,36 +327,45 @@ class NewScene
 
     InitSettings()
     {
+        const that = this;
         this.settings = {
             enabled: false,
-            progress: 0,
+            progress: 0.0,
             bloomStrength: 0.9,
             bloomRadius: 0.63,
             bloomThreshold: 0.2,
             restore: this.Restore.bind(this),
-            expand: this.Expand.bind(this),
+            ExpandOrFold: () =>
+            {
+                ExpandOrFold(that);
+            },
             CameraPos: this.DebugCameraInfo.bind(this),
+            TimeLineProgess: () =>
+            {
+                console.log(timeline.progress());
+            },
             Rotation: this.SetAnimation.bind(this),
             Rotation1: this.SetAnimation.bind(this, 0),
             Rotation2: this.SetAnimation.bind(this, 1),
             Rotation3: this.SetAnimation.bind(this, 2),
-            LookAt1: () =>
-            {
-                this.camera.lookAt(0, 0, -15);
-            },
-            LookAt2: () =>
-            {
-                this.camera.lookAt(0, 0, -55);
-            },
-            LookAt3: () =>
-            {
-                this.camera.lookAt(0, 0, -100);
-            },
             Timeline1: () =>
             {
-                console.log(timeline);
-                timeline.play();
-            }
+                SetTimeLineAni(0);
+            },
+            Timeline2: () =>
+            {
+                SetTimeLineAni(0.25);
+            },
+            Timeline3: () =>
+            {
+                SetTimeLineAni(0.75);
+            },
+            TimeLine4: () =>
+            {
+                SetTimeLineAni(1);
+            },
+            TimeLine5: 0,
+
 
         }
         this.gui = new dat.GUI();
@@ -305,8 +376,7 @@ class NewScene
         post.add(this.settings, 'bloomStrength', 0, 10, 0.01)
         post.add(this.settings, 'bloomRadius', 0, 10, 0.01)
         post.add(this.settings, 'bloomThreshold', 0, 10, 0.01)
-        CameraCtrl.add(this.settings, 'restore');
-        CameraCtrl.add(this.settings, 'expand');
+        CameraCtrl.add(this.settings, 'ExpandOrFold');
         CameraCtrl.add(this.settings, 'CameraPos');
         CameraCtrl.add(this.controls, 'enabled').name("OrbitControls Enabled");
         CameraCtrl.add(this.settings, 'Rotation1');
@@ -315,6 +385,15 @@ class NewScene
         CameraCtrl.open();
 
         CameraCtrl.add(this.settings, 'Timeline1');
+        CameraCtrl.add(this.settings, 'Timeline2');
+        CameraCtrl.add(this.settings, 'Timeline3');
+        CameraCtrl.add(this.settings, 'TimeLine4');
+        CameraCtrl.add(this.settings, 'TimeLine5', 0, 1, 0.000001).onChange((value) =>
+        {
+            that.controls.enabled = false;
+            SetTimeLineAni(value);
+        });
+        CameraCtrl.add(this.settings, 'TimeLineProgess');
 
 
         // this.gui.add(this.camera, 'fov', 1, 180, 0.01);
@@ -418,7 +497,7 @@ class NewScene
                 Scene.add(model_Logo[i].geometry);
             }
             that.models = (model_Logo);
-            this.Expand();
+            ExpandOrFold(that);
             // console.log(that.models);
         });
     }
@@ -434,6 +513,7 @@ class NewScene
     {
         let path_M = [];
         let path_L = [];
+        let isReverse = false;
 
         if (index >= curIndex)
         {
@@ -441,8 +521,9 @@ class NewScene
             {
                 // let isReject = i > 0;
                 GetArrayItems(path_M, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
-                path_L = this.MovePath.LookAtCurve.curves[i].getPoints(this.MovePath.LookAtCurve.curves[i].getLength())
+                GetArrayItems(path_L, this.MovePath.LookAtCurve.curves[i].getPoints(this.MovePath.LookAtCurve.curves[i].points.length));
             }
+            isReverse = false;
         }
         else if (index < curIndex)
         {
@@ -450,15 +531,16 @@ class NewScene
             {
                 // let isReject = i < curIndex;
                 GetArrayItems(path_M, GetXYZArray(this.MovePath.MoveCurve.curves[i]));
-                path_L = this.MovePath.LookAtCurve.curves[i].getPoints(this.MovePath.LookAtCurve.curves[i].getLength());
+                GetArrayItems(path_L, this.MovePath.LookAtCurve.curves[i].getPoints(this.MovePath.LookAtCurve.curves[i].points.length));
             }
+            isReverse = true;
         }
 
         // console.log(CurvePath.curves)
         //  path_M = GetXYZArray(CurvePath.curves[index]);
-
+        console.log(path_L)
         let MoveA = useCameraCurveMove(this.camera, path_M, 5);
-        let LookA = CameraLookAtMove(this.camera, path_L, 5);
+        let LookA = CameraLookAtMove(this.camera, path_L, 5, isReverse);
         // this.CameraLookAtMove(this.MovePath.LookAtCurve.curves[index]);
         curIndex = index;
         console.log(curIndex);
@@ -470,39 +552,47 @@ class NewScene
 
 let _APP = null
 
-window.addEventListener('DOMContentLoaded', () =>
+window
+    .addEventListener('DOMContentLoaded', () =>
+    {
+        _APP = new LogoAnimation()
+    })
+
+function GetPathArray(curvePath)
 {
-    _APP = new NewScene()
-})
+    let path = [];
+    for (let i = 0; i < curvePath.curves.length; i++)
+    {
+        for (let j = 0; j < curvePath.curves[i].points.length; j++)
+        {
+            path.push(curvePath.curves[i].points[j]);
+        }
+        // path.push(curvePath.curves[i]);
+    }
+    // return path;
+    return new THREE.CatmullRomCurve3(path);
+}
 
 function useCameraCurveMove(camera, path, duration, easing = "expo.inOut")
 {
     console.log(camera)
     return gsap.to(camera.position, {
-        duration: duration,
-        ease: easing,
-        overwrite: true,
-        // paused: true,
+        duration: duration, ease: easing, overwrite: true, // paused: true,
         motionPath: {
             path: path
         }
     });
 }
 
-function CameraLookAtMove(camera, curve, duration)
+function CameraLookAtMove(camera, curve, duration, isReverse = false)
 {
     let curves = new THREE.CatmullRomCurve3(curve);
-    let progress = {value: 0};
+    let progress = {value: isReverse ? 1 : 0};
     let cam = camera;
 
     return gsap.to(progress, {
-        value: 1,
-        duration: duration,
-        overwrite: true,
-        ease: "power4.inOut",
-        // paused: true,
-        onUpdateParams: [progress],
-        // onStart()
+        value: isReverse ? 0 : 1, duration: duration, overwrite: true, ease: "power4.inOut", // paused: true,
+        onUpdateParams: [progress], // onStart()
         // {
         //     console.log(curves);
         //     let al = new THREE.Vector3();
@@ -533,7 +623,6 @@ function GetXYZArray(curve)
     // path.push({x: curve.v1.x, y: curve.v1.y, z: curve.v1.z});
     // path.push({x: curve.v2.x, y: curve.v2.y, z: curve.v2.z});
     // path.push({x: curve.v3.x, y: curve.v3.y, z: curve.v3.z});
-
     return path;
 }
 
@@ -548,4 +637,35 @@ function GetArrayItems(gArray, fromA)
         gArray.push(fromA[i]);
     }
     return gArray;
+}
+
+/**
+ * 展开或复位Logo模型
+ * @param logoAni 传入 LogoAnimation类的实列
+ */
+function ExpandOrFold(logoAni)
+{
+    for (let i = 0; i < logoAni.models.length; i++)
+    {
+        gsap.to(logoAni.models[i].geometry.position, {
+            duration: 1,
+            z: isExpand ? 0 : -(3 - i) * interval
+        });
+    }
+    isExpand = !isExpand;
+}
+
+/**
+ * 相机移动到传入进度的位置
+ * @param to 动画在时间的位置0-1
+ */
+function SetTimeLineAni(to)
+{
+    const progress = {value: 0};
+    gsap.fromTo(progress, {value: timeline.progress()}, {
+        value: to, duration: 2, onUpdateParams: [progress], onUpdate({value})
+        {
+            timeline.progress(value);
+        }
+    });
 }

@@ -131,3 +131,4 @@ dist
 .pnp.*
 
 /static/model/
+/static/model1/
