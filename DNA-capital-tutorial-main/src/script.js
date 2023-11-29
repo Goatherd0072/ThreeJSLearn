@@ -19,11 +19,27 @@ import {rigistGSAPPlugin} from "./composables/gsapCTRL";
 import {AddLine} from "./Addline";
 
 const canvas = document.querySelector('.webgl')
-const interval = 10;
+const interval = 50;
 const duration = 5;
 let isExpand = false;
 let curIndex = 0;
 const timeline = gsap.timeline({paused: true})
+let effect;
+const dir = {
+    isUp: false,
+    isDown: false,
+    isRight: false,
+    isLeft: false,
+    isForward: false,
+    isBack: false,
+    isTargetUp: false,
+    isTargetDown: false,
+    isTargetRight: false,
+    isTargetLeft: false,
+    isTargetForward: false,
+    isTargetBack: false
+}
+let camCtrlEnable = false;
 
 class LogoAnimation
 {
@@ -34,6 +50,7 @@ class LogoAnimation
 
     _Init()
     {
+        let that = this;
         rigistGSAPPlugin();
 
         this.scene = new THREE.Scene()
@@ -41,11 +58,13 @@ class LogoAnimation
         this.GLTFLoader = new GLTFLoader();
         this.models = [];
         this.AddModel(this.scene);
-
+        this.target = (new THREE.Mesh(
+            (new THREE.BoxGeometry(1, 1, 1)),
+            (new THREE.MeshBasicMaterial({color: 0xff0000}))));
+        this.scene.add(this.target);
         // this.InitDisplay()
         this.InitCamera();
         this.InitLineData();
-
         this.InitRenderer()
         this.InitPostProcessing()
         this.InitLights()
@@ -54,14 +73,46 @@ class LogoAnimation
         this.initAxes();
         this.InitSettings();
 
-
         // console.log(CurvePath);
         window.addEventListener('resize', () =>
         {
             this.Resize()
         })
 
+        document.addEventListener('keydown', (e) =>
+        {
+            if (e.defaultPrevented)
+            {
+                console.log("return")
+                return;
+            }
+            if (!e.repeat)
+            {
+                // console.log(e.key)
+                that.doMoveEvent(e, true);
+            }
+            else
+            {
+            }
+        });
+        document.addEventListener('keyup', (e) =>
+        {
+            if (e.defaultPrevented)
+            {
+                console.log("return")
+                return;
+            }
+            if (!e.repeat)
+            {
+                that.doMoveEvent(e, false);
+            }
+            else
+            {
+            }
+        });
+
         AddLine(this.scene, this.renderer.domElement, this.camera, this.renderer, this.controls);
+
     }
 
     InitDisplay()
@@ -159,7 +210,7 @@ class LogoAnimation
             new THREE.Vector3(3.093172717244061, 0.1665159282835209, -12.230508810485986),
             new THREE.Vector3(-0.10959144827232992, -0.8531798190742748, -13.29716892428268),
             new THREE.Vector3(0.08479965123167776, -1.3592394669421424, -28.249941694738066),
-            new THREE.Vector3(0, 0, -50)]);
+            new THREE.Vector3(0, 0, -1.002002002002002)]);
 
         CurvePath_Lookat.add(curveL1);
         CurvePath_Lookat.add(curveL2);
@@ -184,7 +235,8 @@ class LogoAnimation
             new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553),
             new THREE.Vector3(-26.733974751625517, 0.9504425493265393, 26.557956098924738),
             new THREE.Vector3(-15.763990762772277, 0.9337524736442688, 39.31175959601513),
-            new THREE.Vector3(0, 0, 50)])
+            new THREE.Vector3(-35, 14, 470.7412568845334)])
+
 
         // Move Line
         CurvePath.add(curve1);
@@ -267,6 +319,27 @@ class LogoAnimation
         // const ppp = moveP.getPoints(5000);
         // const pathMeshP = new THREE.Line(new THREE.BufferGeometry().setFromPoints(ppp), new THREE.LineBasicMaterial({color: "#af0101"}));
         // this.scene.add(pathMeshP);
+        // moveP = [
+        //     {
+        //         "x": 47.3697899,
+        //         "y": 3.174,
+        //         "z": 404.507049
+        //     },
+        //     {
+        //         "x": -17,
+        //         "y": 56,
+        //         "z": 430.74126
+        //     }
+        // ];
+        // lookP =
+        //     new THREE.LineCurve3(new THREE.Vector3(-46, 0, -74),
+        //         new THREE.Vector3(170, -136, -1012)
+        //     )
+        const pointTT = lookP.getPoints(500);
+        const pathMeshTT = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pointTT),
+            new THREE.LineBasicMaterial({color: "#9802ee"}));
+        this.scene.add(pathMeshTT);
+
         const cam = this.camera;
         timeline.to(cam.position, {
             duration: 10, ease: "none", motionPath: {
@@ -276,13 +349,14 @@ class LogoAnimation
                 // console.log(this.progress());
                 let tempV3 = new THREE.Vector3();
                 lookP.getPoint(this.progress(), tempV3);
+                console.log(tempV3)
                 cam.lookAt(tempV3);
             },
         }, 0);
-        timeline.addPause(2.5);
-        timeline.addPause(5);
-        timeline.addPause(7.5);
-        timeline.addPause(10);
+        // timeline.addPause(2.5);
+        // timeline.addPause(5);
+        // timeline.addPause(7.5);
+        // timeline.addPause(10);
     }
 
     InitRenderer()
@@ -297,6 +371,7 @@ class LogoAnimation
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setSize(window.innerWidth, window.innerHeight)
         this.renderer.render(this.scene, this.camera)
+
     }
 
     InitCamera()
@@ -337,15 +412,25 @@ class LogoAnimation
             restore: this.Restore.bind(this),
             ExpandOrFold: () =>
             {
-                ExpandOrFold(that);
+                ExpandOrFold(that, isExpand);
+            },
+            CamCtrlEnable: () =>
+            {
+                camCtrlEnable = !camCtrlEnable;
+                that.controls.enabled = false;
+            },
+            OrbitCtrl: () =>
+            {
+                that.controls.enabled = !that.controls.enabled;
+                camCtrlEnable = false
             },
             CameraPos: this.DebugCameraInfo.bind(this),
             TimeLineProgess: () =>
             {
                 console.log(timeline.progress());
             },
-            Rotation: this.SetAnimation.bind(this),
-            Rotation1: this.SetAnimation.bind(this, 0),
+            Rotation: 1,
+            Rotation1: 1,
             Rotation2: this.SetAnimation.bind(this, 1),
             Rotation3: this.SetAnimation.bind(this, 2),
             Timeline1: () =>
@@ -365,7 +450,25 @@ class LogoAnimation
                 SetTimeLineAni(1);
             },
             TimeLine5: 0,
+            SetPointSize: () =>
+            {
+                that.models.forEach((value) =>
+                {
+                    let size = 0.1;
+                    if (value.geometry.scale.x === 0.5)
+                    {
+                        size = 1;
+                    }
+                    else
+                    {
+                        size = 0.1;
+                    }
 
+
+                    // value.geometry.scale.set(size, size, size);
+                    // value.geometry.scale.set(0.5, 0.5, 0.5)
+                })
+            }
 
         }
         this.gui = new dat.GUI();
@@ -378,8 +481,13 @@ class LogoAnimation
         post.add(this.settings, 'bloomThreshold', 0, 10, 0.01)
         CameraCtrl.add(this.settings, 'ExpandOrFold');
         CameraCtrl.add(this.settings, 'CameraPos');
-        CameraCtrl.add(this.controls, 'enabled').name("OrbitControls Enabled");
-        CameraCtrl.add(this.settings, 'Rotation1');
+        CameraCtrl.add(this.settings, 'CamCtrlEnable').name("CamControls Enabled");
+        CameraCtrl.add(this.settings, 'OrbitCtrl').name("OrbitControls Enabled");
+        CameraCtrl.add(this.settings, 'Rotation1', 0, 360, 0.01).onChange((value) =>
+        {
+            that.camera.rotation.y = value;
+        });
+
         CameraCtrl.add(this.settings, 'Rotation2');
         CameraCtrl.add(this.settings, 'Rotation3');
         CameraCtrl.open();
@@ -394,6 +502,8 @@ class LogoAnimation
             SetTimeLineAni(value);
         });
         CameraCtrl.add(this.settings, 'TimeLineProgess');
+        let PointCtrl = this.gui.addFolder('PointCtrl');
+        PointCtrl.add(this.settings, 'SetPointSize');
 
 
         // this.gui.add(this.camera, 'fov', 1, 180, 0.01);
@@ -406,7 +516,12 @@ class LogoAnimation
         this.controls = new OrbitControls(this.camera, canvas)
         this.controls.enableDamping = true
         this.controls.enabled = false;
-        this.controls.update()
+        this.controls.keys = {
+            LEFT: 'ArrowLeft', //left arrow
+            UP: 'ArrowUp', // up arrow
+            RIGHT: 'ArrowRight', // right arrow
+            BOTTOM: 'ArrowDown' // down arrow
+        }
     }
 
     Restore()
@@ -451,6 +566,7 @@ class LogoAnimation
     {
         requestAnimationFrame(() =>
         {
+            this.cameraMove()
             if (this.settings.enabled)
             {
                 this.bloomPass.threshold = this.settings.bloomThreshold
@@ -469,6 +585,7 @@ class LogoAnimation
             if (this.controls.enabled)
             {
                 this.controls.update()
+                this.controls.target = this.target.position;
             }
             this.Update()
         })
@@ -476,7 +593,7 @@ class LogoAnimation
 
     initAxes()
     {
-        let axes = new AxesHelper(-100);
+        let axes = new AxesHelper(100);
         axes.position.set(0, 0, 0);
         this.scene.add(axes);
     }
@@ -493,11 +610,11 @@ class LogoAnimation
             {
                 model_Logo.push(new ModelPoint(gltf.scene.children[i], 0.025, "#00ABD1"));
                 //model_Logo[i].geometry.position.set(0, 0, 0);
-                model_Logo[i].geometry.scale.set(0.1, 0.1, 0.1);
+                model_Logo[i].geometry.scale.set(1, 1, 1);
                 Scene.add(model_Logo[i].geometry);
             }
             that.models = (model_Logo);
-            ExpandOrFold(that);
+            ExpandOrFold(that, false);
             // console.log(that.models);
         });
     }
@@ -507,6 +624,7 @@ class LogoAnimation
         console.log(this.camera.position);
         console.log(this.camera.rotation);
         console.log(this.camera);
+        console.log(this.target.position);
     }
 
     SetAnimation(index)
@@ -546,6 +664,83 @@ class LogoAnimation
         console.log(curIndex);
 
         return [MoveA, LookA];
+    }
+
+    cameraMove()
+    {
+        if (dir.isTargetForward)
+        {
+            this.target.translateZ(-2);
+        }
+        if (dir.isTargetBack)
+        {
+            this.target.translateZ(2);
+        }
+        if (dir.isTargetUp)
+        {
+            this.target.translateY(2);
+            //mainCamera.rotateX(THREE.MathUtils.degToRad(1));
+        }
+        if (dir.isTargetDown)
+        {
+            this.target.translateY(-2);
+            //mainCamera.rotateX(-THREE.MathUtils.degToRad(1));
+        }
+        if (dir.isTargetLeft)
+        {
+            this.target.translateX(2);
+            // mainCamera.rotateY(THREE.MathUtils.degToRad(1));
+        }
+        if (dir.isTargetRight)
+        {
+            this.target.translateX(-2);
+            // mainCamera.rotateY(-THREE.MathUtils.degToRad(1));
+        }
+        //this.camera.lookAt(this.target.position);
+    }
+
+    doMoveEvent(e, isKeyDown)
+    {
+        // console.log(`${e.key} [事件${isKeyDown ? 'KeyDown' : 'KeyUp'}]`)
+        switch (e.key)
+        {
+            case 'w':
+                dir.isForward = isKeyDown;
+                break;
+            case 's':
+                dir.isBack = isKeyDown;
+                break;
+            case 'a':
+                dir.isLeft = isKeyDown;
+                break;
+            case 'd':
+                dir.isRight = isKeyDown;
+                break;
+            case 'q':
+                dir.isUp = isKeyDown;
+                break;
+            case 'e':
+                dir.isDown = isKeyDown;
+                break;
+            case 'ArrowUp':
+                dir.isTargetForward = isKeyDown;
+                break;
+            case 'ArrowDown':
+                dir.isTargetBack = isKeyDown;
+                break;
+            case 'ArrowLeft':
+                dir.isTargetLeft = isKeyDown;
+                break;
+            case 'ArrowRight':
+                dir.isTargetRight = isKeyDown;
+                break;
+            case '0':
+                dir.isTargetUp = isKeyDown;
+                break;
+            case '1':
+                dir.isTargetDown = isKeyDown;
+                break;
+        }
     }
 
 }
@@ -642,15 +837,34 @@ function GetArrayItems(gArray, fromA)
 /**
  * 展开或复位Logo模型
  * @param logoAni 传入 LogoAnimation类的实列
+ * @param isNotExpand 是否展开
  */
-function ExpandOrFold(logoAni)
+function ExpandOrFold(logoAni, isNotExpand)
 {
+    let size = 25.0;
+    if (isNotExpand)
+    {
+        size = 100.0;
+    }
+    // console.log(logoAni.models[0].geometry.material.uniforms)
+    // value.geometry.scale.set(size, size, size);
+
     for (let i = 0; i < logoAni.models.length; i++)
     {
         gsap.to(logoAni.models[i].geometry.position, {
             duration: 1,
-            z: isExpand ? 0 : -(3 - i) * interval
+            z: isNotExpand ? 0 : -(3 - i) * interval
         });
+        gsap.to(logoAni.models[i].geometry.material.uniforms.pointSize,
+            {
+                duration: 1,
+                value: size
+            });
+        // gsap.to(logoAni.models[i].geometry.scale,
+        //     {
+        //         duration: 1,
+        //         x: size, y: size, z: size
+        //     });
     }
     isExpand = !isExpand;
 }
@@ -666,6 +880,14 @@ function SetTimeLineAni(to)
         value: to, duration: 2, onUpdateParams: [progress], onUpdate({value})
         {
             timeline.progress(value);
-        }
+        },
+        // onComplete()
+        // {
+        //     ExpandOrFold(_APP, true);
+        // },
+        // onStart()
+        // {
+        //     ExpandOrFold(_APP, false);
+        // }
     });
 }

@@ -290,17 +290,18 @@ function initModel() {
 
   //./Model/scene.gltf     skull
   // Logo/LOGO_001_VOL.glt
-  gltfLoader.load("./Model/Logo/untitled.gltf", (gltf) => {
+  gltfLoader.load("./Model/E02(1).gltf", (gltf) => {
     console.log("success");
     console.log(gltf);
-    //addModel(gltf.scene);
-    let mat = GetPointMaterial(0.05, "#079DCA");
-    modelP1 = new ModelPoint(gltf.scene.children[0], mat);
-    // var gtflObj = modelP.GenenratePoints(true);
-    // scene.add(gtflObj);
-    modelP1.geometry.position.set(0, 0, 0);
-    modelP1.geometry.scale.set(0.1, 0.1, 0.1);
-    scene.add(modelP1.geometry);
+
+    addModel(gltf.scene);
+    // let mat = GetPointMaterial(0.05, "#079DCA");
+    // modelP1 = new ModelPoint(gltf.scene.children[0], mat);
+    // // var gtflObj = modelP.GenenratePoints(true);
+    // // scene.add(gtflObj);
+    // modelP1.geometry.position.set(0, 0, 0);
+    // modelP1.geometry.scale.set(0.1, 0.1, 0.1);
+    // scene.add(modelP1.geometry);
     // tick(modelP);
     //tick();
     //addPoint(gltf.scene.children[0], 0.1);

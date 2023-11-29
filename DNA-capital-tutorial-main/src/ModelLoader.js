@@ -22,7 +22,7 @@ export default class ModelLoader {
                         "#00ABD1"
                     ));
                     //model_Logo[i].geometry.position.set(0, 0, 0);
-                    model_Logo[i].geometry.scale.set(0.1, 0.1, 0.1);
+                    model_Logo[i].geometry.scale.set(1, 1, 1);
                     model_Logo[i].geometry.position.set(0, 0, i*100);
                     //model_Logo[i].geometry.rotateY(45);
                     // Scene.add(model_Logo[i].geometry);

@@ -175,10 +175,10 @@ function addSplineObject(position)
     else
     {
 
-        object.position.x = Math.random() * 5;
-        object.position.y = Math.random() * 5;
-        object.position.z = Math.random() * 5;
-
+        object.position.copy(camera.position);
+        // object.position.x = Math.random() * 5;
+        // object.position.y = Math.random() * 5;
+        // object.position.z = Math.random() * 5;
     }
 
     object.castShadow = true;
