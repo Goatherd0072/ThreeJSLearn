@@ -2,7 +2,7 @@ export let AberrationShader = {
 
     uniforms: {
         'tDiffuse': { value: null},
-        'distort': { value: 0.5},
+        'distort': { value: 0.1},
         'time': { value: 0}
     },
     vertexShader: `

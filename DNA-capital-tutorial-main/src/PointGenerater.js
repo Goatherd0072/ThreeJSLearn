@@ -204,7 +204,7 @@ export class ModelPoint
                 aperture: {
                     value: 100,
                 },
-                maxParticleSize: {
+                pointSize: {
                     value: 8,
                 },
                 tint: {
@@ -253,13 +253,15 @@ export class ModelPoint
             uniforms: {
                 time: {value: 0},
                 pointSize: {value: 25.0},
+                focalDistance: {value: 385},
+                aperture: {value: 100},
                 u_color1: {value: new THREE.Color().setRGB(0, 171 / 255, 209 / 255)},
                 u_color2: {value: new THREE.Color().setRGB(8 / 255, 110 / 255, 195 / 255)},
                 u_color3: {value: new THREE.Color().setRGB(7 / 255, 77 / 255, 135 / 255)}
             },
-            depthTest: false,
+            depthTest: true,
             depthWrite: false,
-            blending: THREE.AdditiveBlending
+            blending: THREE.AdditiveBlending,
         });
 
         return mat;

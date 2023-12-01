@@ -17,6 +17,7 @@ import ModelPoint from "./PointGenerater";
 import {rigistGSAPPlugin} from "./composables/gsapCTRL";
 
 import {AddLine} from "./Addline";
+import {BokehPass, BokehDepthShader} from 'three/examples/jsm/postprocessing/BokehPass';
 
 const canvas = document.querySelector('.webgl')
 const interval = 50;
@@ -54,13 +55,12 @@ class LogoAnimation
         rigistGSAPPlugin();
 
         this.scene = new THREE.Scene()
-        this.clock = new THREE.Clock()
         this.GLTFLoader = new GLTFLoader();
         this.models = [];
         this.AddModel(this.scene);
         this.target = (new THREE.Mesh(
-            (new THREE.BoxGeometry(1, 1, 1)),
-            (new THREE.MeshBasicMaterial({color: 0xff0000}))));
+            (new THREE.SphereGeometry(1)),
+            (new THREE.MeshBasicMaterial({color: "#ff00aa"}))));
         this.scene.add(this.target);
         // this.InitDisplay()
         this.InitCamera();
@@ -165,17 +165,26 @@ class LogoAnimation
 
     InitPostProcessing()
     {
+        this.depthShader = BokehDepthShader;
         this.renderScene = new RenderPass(this.scene, this.camera)
         this.bloomPass = new UnrealBloomPass(new THREE.Vector2(0, 0), 1.5, 0.9, 0.05);
-        this.customPass = new ShaderPass(AberrationShader)
+        // this.customPass = new ShaderPass(AberrationShader)
         this.composer = new EffectComposer(this.renderer)
+        this.bokehPass = new BokehPass(this.scene, this.camera, {
+            focus: 0, // 聚焦
+            aspect: this.camera.aspect,
+            aperture: 0.000005, // 孔径
+            maxblur: 1,
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
 
 
         this.composer.addPass(this.renderScene)
-        this.composer.addPass(this.customPass)
+        // this.composer.addPass(this.customPass)
 
         this.composer.addPass(this.bloomPass)
-
+        this.composer.addPass(this.bokehPass);
     }
 
     InitLineData()
@@ -191,67 +200,110 @@ class LogoAnimation
         //         new THREE.Vector3(-1.2834385134549515, -1.2365950207867376, -20.884463506281563),
         //         new THREE.Vector3(2.375688480045702, 0.379855534924074, -10.29535403209438),
         //         new THREE.Vector3(0.049298499412910535, -0.2356612523274516, 2.8617929692406694)
-        //     ]
+        //     ][new THREE.Vector3(-11.764421951009506, 23.56679034773233, -157.85471560183635),
+        // 	new THREE.Vector3(196.46045616681047, 13.667270218675487, 168.65084080766593),
+        // 	new THREE.Vector3(-10.238224083296704, 3.454664375850792, -89.35277153823496)]
         // )
         const curveL1 = new THREE.CatmullRomCurve3(
             [
-                new THREE.Vector3(-1.5216947019223503, 1.9934981561189686, -30.719796594891754),
-                new THREE.Vector3(-3.373181666839843, 0.8052435968169651, -25.942288974633406),
-                new THREE.Vector3(-3.725351863117192, -0.8844262711772514, -23.08571152170186),
-                new THREE.Vector3(-1.7595242068216166, -1.5109388031436028, -20.310360286933815)]);
+                new THREE.Vector3(-11.764421951009506, 23.56679034773233, -157.85471560183635),
+                // new THREE.Vector3(196.46045616681047, 103.667270218675487, 168.65084080766593),
+                new THREE.Vector3(-10.238224083296704, 3.454664375850792, -89.35277153823496)]);
 
         const curveL2 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-1.7595242068216166, -1.5109388031436028, -20.310360286933815),
-            new THREE.Vector3(4.681056974816118, -2.81753551974232, -26.258110976461797),
-            new THREE.Vector3(10.31067964758566, -1.7749742772106745, -20.452094802134656),
-            new THREE.Vector3(6.303829280540356, -0.3241134915266819, -12.456649845418182)]);
+            new THREE.Vector3(-10.238224083296704, 3.454664375850792, -89.35277153823496),
+            new THREE.Vector3(4.545299292331766, 10.678384811611359, -95.06212910904628),
+            new THREE.Vector3(-11.259624865955395, -3.8823521779072965, -101.33130441452205)]);
 
         const curveL3 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(3.093172717244061, 0.1665159282835209, -12.230508810485986),
-            new THREE.Vector3(-0.10959144827232992, -0.8531798190742748, -13.29716892428268),
-            new THREE.Vector3(0.08479965123167776, -1.3592394669421424, -28.249941694738066),
-            new THREE.Vector3(0, 0, -1.002002002002002)]);
+            new THREE.Vector3(-11.227102439344371, -3.882356720174405, -101.22293834326538),
+            new THREE.Vector3(-201.1437509297759, -35.14372495646582, -164.94534870709504),
+            new THREE.Vector3(-85.72703198897776, 30.892873019671924, -254.4092195725853),
+            new THREE.Vector3(-11.68128773580167, 13.20311004398334, -158.75545730000857)]);
+
+        const curveL4 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-12.604783626060788, 13.222477239153294, -159.21447284860764),
+            new THREE.Vector3(-12.604783626060788, 13.222477239153294, -159.21447284860764),
+            new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107)
+        ]);
+
+        const curveL5 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107),
+            new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107),
+            new THREE.Vector3(0, 0, 0)
+        ]);
+
+        const curveL6 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, 0)
+        ])
 
         CurvePath_Lookat.add(curveL1);
         CurvePath_Lookat.add(curveL2);
         CurvePath_Lookat.add(curveL3);
+        CurvePath_Lookat.add(curveL4);
+        CurvePath_Lookat.add(curveL5);
+        CurvePath_Lookat.add(curveL6);
+
         const pointsL = CurvePath_Lookat.getPoints(500);
         const pathMeshL = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pointsL), new THREE.LineBasicMaterial({color: "#c6d410"}));
 
 
         const curve1 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-18.630205576939236, 3.174001195723268, -45.492953175042096),
-            new THREE.Vector3(-9.895740083175333, -3.7373444717866944, -30.023613362420154),
-            new THREE.Vector3(20.45874157123685, -1.5049265553396705, -24.027488510699396),
-            new THREE.Vector3(15.003953396681984, 3.602786273550077, -13.339936494625313)]);
+            new THREE.Vector3(-17.351256758347148, -87.27859245064224, -166.38835132132087),
+            // new THREE.Vector3(27.02787540231489, -24.64524022022103, -74.2897430552669),
+            new THREE.Vector3(-33.14287931466795, 87.27446416382537, -26.35586926120866)]);
 
         const curve2 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(15.003953396681984, 3.602786273550077, -13.339936494625313),
-            new THREE.Vector3(9.909582401881716, 4.855838497697632, -9.01427271125332),
-            new THREE.Vector3(-3.72108146588562, 4.847023905775702, 0.9647526520987912),
-            new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553)
+            new THREE.Vector3(-33.14287931466795, 87.27446416382537, -26.35586926120866),
+            new THREE.Vector3(-20.14287931466795, 17.27446416382537, -26.35586926120866),
+            new THREE.Vector3(10.507031558253656, -95.18624508405821, -179.7973974327407)
         ])
         const curve3 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-29.55174112366012, 1.9736646378644251, 10.59882117230553),
-            new THREE.Vector3(-26.733974751625517, 0.9504425493265393, 26.557956098924738),
-            new THREE.Vector3(-15.763990762772277, 0.9337524736442688, 39.31175959601513),
-            new THREE.Vector3(-35, 14, 470.7412568845334)])
-
+            new THREE.Vector3(10.507031558253656, -95.18624508405821, -179.7973974327407),
+            new THREE.Vector3(-42.85347491819384, -78.30157126120932, -203.70369017597457),
+            new THREE.Vector3(-10.818613219302247, 121.31903628418618, -158.1799361215729)
+        ])
+        const curve4 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-12.604720077994253, 129.09296855107493, -159.21438291676546),
+            new THREE.Vector3(-12.604720077994253, 129.09296855107493, -159.21438291676546),
+            new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544)
+        ]);
+        const curve5 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544),
+            new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544),
+            new THREE.Vector3(0, 0, 450)
+        ])
+        const curve6 = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0, 450),
+            new THREE.Vector3(0, 0, 450),
+            new THREE.Vector3(0, 0, 450)
+        ])
 
         // Move Line
-        CurvePath.add(curve1);
-        CurvePath.add(curve2);
-        CurvePath.add(curve3);
-        // CurvePath.add(curve4);
+
         const points = CurvePath.getPoints(500);
         const pathMesh = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0x00ffff}));
-        this.scene.add(pathMeshL);
-        this.scene.add(pathMesh);
-
+        // this.scene.add(pathMeshL);
+        // this.scene.add(pathMesh);
+        const points1 = curve1.getPoints(500);
+        const pathMesh1 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points1), new THREE.LineBasicMaterial({color: '#00ffff'}));
+        const points2 = curveL1.getPoints(500);
+        const pathMesh2 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points2), new THREE.LineBasicMaterial({color: '#f4e001'}));
+        this.scene.add(pathMesh1);
+        this.scene.add(pathMesh2);
+        const points3 = curve2.getPoints(500);
+        const pathMesh3 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points1), new THREE.LineBasicMaterial({color: '#00ffff'}));
+        const points4 = curveL2.getPoints(500);
+        const pathMesh5 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points2), new THREE.LineBasicMaterial({color: '#f4e001'}));
+        this.scene.add(pathMesh3);
+        this.scene.add(pathMesh5);
 
         let moveP = GetXYZArray(GetPathArray(this.MovePath.MoveCurve));
         let lookP = (GetPathArray(this.MovePath.LookAtCurve));
 
+        console.log(moveP);
         // console.log(moveP);
         // exportSpline(lookP);
         // const CamPath = {
@@ -305,54 +357,116 @@ class LogoAnimation
             {
 
                 const p = Curve3.points[i];
-                strplace.push(`new THREE.Vector3(${p.x}, ${p.y}, ${p.z})`);
-
+                // strplace.push(`new THREE.Vector3(${p.x}, ${p.y}, ${p.z})`);
+                strplace.push(`{"x":${p.x},"y":${p.y},"z":${p.z}}`);
             }
 
-            console.log(strplace.join(',\n'));
+            // console.log(strplace.join(',\n'));
             const code = '[' + (strplace.join(',\n\t')) + ']';
-            prompt('copy and paste code', code);
-
+            // prompt('copy and paste code', code);
+            console.log(code);
         }
 
-        // console.log(moveP);
-        // const ppp = moveP.getPoints(5000);
-        // const pathMeshP = new THREE.Line(new THREE.BufferGeometry().setFromPoints(ppp), new THREE.LineBasicMaterial({color: "#af0101"}));
-        // this.scene.add(pathMeshP);
-        // moveP = [
-        //     {
-        //         "x": 47.3697899,
-        //         "y": 3.174,
-        //         "z": 404.507049
-        //     },
-        //     {
-        //         "x": -17,
-        //         "y": 56,
-        //         "z": 430.74126
-        //     }
-        // ];
-        // lookP =
-        //     new THREE.LineCurve3(new THREE.Vector3(-46, 0, -74),
-        //         new THREE.Vector3(170, -136, -1012)
-        //     )
-        const pointTT = lookP.getPoints(500);
-        const pathMeshTT = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pointTT),
-            new THREE.LineBasicMaterial({color: "#9802ee"}));
-        this.scene.add(pathMeshTT);
+        // exportSpline(curve1);
+        // exportSpline(curve2);
+        // exportSpline(curve3);
+        // exportSpline(curve4);
+        // exportSpline(curve5);
+
+
+        let moveP1 = GetXYZArray((curve1));
+        let lookP1 = curveL1;
+        let moveP2 = GetXYZArray((curve2));
+        let lookP2 = curveL2;
+        let moveP3 = GetXYZArray((curve3));
+        let lookP3 = curveL3;
+        let moveP4 = GetXYZArray((curve4));
+        let lookP4 = curveL4;
+        let moveP5 = GetXYZArray((curve5));
+        let lookP5 = curveL5;
 
         const cam = this.camera;
         timeline.to(cam.position, {
-            duration: 10, ease: "none", motionPath: {
-                path: moveP
-            }, onUpdate()
+            duration: 10,
+            ease: "none",
+            motionPath: {
+                path: moveP1
+            },
+            onUpdate()
             {
                 // console.log(this.progress());
                 let tempV3 = new THREE.Vector3();
-                lookP.getPoint(this.progress(), tempV3);
+                lookP1.getPoint(this.progress(), tempV3);
                 console.log(tempV3)
                 cam.lookAt(tempV3);
             },
         }, 0);
+
+        timeline.to(cam.position, {
+            duration: 10,
+            ease: "none",
+            motionPath: {
+                path: moveP2
+            },
+            onUpdate()
+            {
+                // console.log(this.progress());
+                let tempV3 = new THREE.Vector3();
+                lookP2.getPoint(this.progress(), tempV3);
+                console.log(tempV3)
+                cam.lookAt(tempV3);
+            },
+        }, 10);
+
+        timeline.to(cam.position, {
+            duration: 10,
+            ease: "none",
+            motionPath: {
+                path: moveP3
+            },
+            onUpdate()
+            {
+                // console.log(this.progress());
+                let tempV3 = new THREE.Vector3();
+                lookP3.getPoint(this.progress(), tempV3);
+                console.log(tempV3)
+                cam.lookAt(tempV3);
+            },
+        }, 20);
+
+        timeline.to(cam.position, {
+            duration: 10,
+            ease: "none",
+            motionPath: {
+                path: moveP4
+            },
+            onUpdate()
+            {
+                // console.log(this.progress());
+                let tempV3 = new THREE.Vector3();
+                lookP4.getPoint(this.progress(), tempV3);
+                console.log(tempV3)
+                cam.lookAt(tempV3);
+            },
+        }, 30);
+
+        timeline.to(cam.position, {
+            duration: 10,
+            ease: "none",
+            motionPath: {
+                path: moveP5
+            },
+            onUpdate()
+            {
+                // console.log(this.progress());
+                let tempV3 = new THREE.Vector3();
+                lookP5.getPoint(this.progress(), tempV3);
+                console.log(tempV3)
+                cam.lookAt(tempV3);
+            },
+        }, 40);
+
+
         // timeline.addPause(2.5);
         // timeline.addPause(5);
         // timeline.addPause(7.5);
@@ -376,7 +490,7 @@ class LogoAnimation
 
     InitCamera()
     {
-        this.camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 1, 1000)
+        this.camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 1, 100000)
         // this.camera = new THREE.OrthographicCamera(-window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 0.1, 1000)
         // this.camera.viewport = new THREE.Vector4(0, 0, 1000, 1000)
         // this.camera.position.set(0, 0, 50)//
@@ -387,8 +501,8 @@ class LogoAnimation
         // let camLook = this.MovePath.LookAtCurve.curves[0].getPoint(0);
         // console.log(camPos, camLook);
         this.scene.add(this.camera)
-        this.camera.position.set(-18.630205576939236, 3.174001195723268, -45.492953175042096);
-        this.camera.lookAt(-1.5216947019223503, 1.9934981561189686, -30.719796594891754);
+        this.camera.position.set(26.65614, -18.40766, -77.79627);
+        this.camera.lookAt(new THREE.Vector3(-11.359254285677226, 18.22751993117231, -139.66914914670443));
         // this.camera.position.set(-4.388497130267792, 2.8820619964812373, -50.870941259502025);
         // this.camera.lookAt(0, 0, -15);
 
@@ -409,6 +523,9 @@ class LogoAnimation
             bloomStrength: 0.9,
             bloomRadius: 0.63,
             bloomThreshold: 0.2,
+            focus: 500.0,
+            aperture: 5,
+            maxblur: 0.01,
             restore: this.Restore.bind(this),
             ExpandOrFold: () =>
             {
@@ -416,8 +533,7 @@ class LogoAnimation
             },
             CamCtrlEnable: () =>
             {
-                camCtrlEnable = !camCtrlEnable;
-                that.controls.enabled = false;
+                timeline.seek(0);
             },
             OrbitCtrl: () =>
             {
@@ -475,10 +591,12 @@ class LogoAnimation
         let post = this.gui.addFolder('PostProcessing');
         let CameraCtrl = this.gui.addFolder('CameraCtrl');
         post.add(this.settings, 'enabled').name("Post Enabled")
-        post.add(this.settings, 'progress', 0, 1, 0.01)
         post.add(this.settings, 'bloomStrength', 0, 10, 0.01)
         post.add(this.settings, 'bloomRadius', 0, 10, 0.01)
         post.add(this.settings, 'bloomThreshold', 0, 10, 0.01)
+        post.add(this.settings, 'focus')
+        post.add(this.settings, 'aperture')
+        post.add(this.settings, 'maxblur')
         CameraCtrl.add(this.settings, 'ExpandOrFold');
         CameraCtrl.add(this.settings, 'CameraPos');
         CameraCtrl.add(this.settings, 'CamCtrlEnable').name("CamControls Enabled");
@@ -572,6 +690,9 @@ class LogoAnimation
                 this.bloomPass.threshold = this.settings.bloomThreshold
                 this.bloomPass.strength = this.settings.bloomStrength
                 this.bloomPass.radius = this.settings.bloomRadius
+                this.bokehPass.uniforms['focus'].value = this.settings.focus
+                this.bokehPass.uniforms['aperture'].value = this.settings.aperture * 0.00001
+                this.bokehPass.uniforms['maxblur'].value = this.settings.maxblur
                 this.composer.render(this.scene, this.camera)
             }
             else
@@ -593,7 +714,7 @@ class LogoAnimation
 
     initAxes()
     {
-        let axes = new AxesHelper(100);
+        let axes = new AxesHelper(-500);
         axes.position.set(0, 0, 0);
         this.scene.add(axes);
     }
@@ -621,10 +742,13 @@ class LogoAnimation
 
     DebugCameraInfo()
     {
+        console.log("camPos")
         console.log(this.camera.position);
-        console.log(this.camera.rotation);
-        console.log(this.camera);
+        console.log("camLook");
+        console.log(this.camera.getWorldDirection(new THREE.Vector3()));
+        console.log("targetPos");
         console.log(this.target.position);
+        console.log(this.camera);
     }
 
     SetAnimation(index)
@@ -877,7 +1001,7 @@ function SetTimeLineAni(to)
 {
     const progress = {value: 0};
     gsap.fromTo(progress, {value: timeline.progress()}, {
-        value: to, duration: 2, onUpdateParams: [progress], onUpdate({value})
+        value: to, duration: 3, onUpdateParams: [progress], onUpdate({value})
         {
             timeline.progress(value);
         },
