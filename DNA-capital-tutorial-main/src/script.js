@@ -9,8 +9,10 @@ import {EffectComposer} from 'three/examples/jsm/postprocessing/EffectComposer'
 import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass'
 import {ShaderPass} from 'three/examples/jsm/postprocessing/ShaderPass'
 import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass'
+import {BloomPass} from "three/examples/jsm/postprocessing/BloomPass";
 import {AberrationShader} from './shader/customPass.js'
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
+import {initTransformControls} from "./TransformCTRL.js";
 
 import gsap from "gsap";
 import ModelPoint from "./PointGenerater";
@@ -41,6 +43,7 @@ const dir = {
     isTargetBack: false
 }
 let camCtrlEnable = false;
+let test;
 
 class LogoAnimation
 {
@@ -57,7 +60,13 @@ class LogoAnimation
         this.scene = new THREE.Scene()
         this.GLTFLoader = new GLTFLoader();
         this.models = [];
-        this.AddModel(this.scene);
+
+        test = (new THREE.Mesh(
+            (new THREE.BoxGeometry(1)),
+            (new THREE.MeshBasicMaterial({color: "#26cb9f"}))));
+        test.position.set(0, 0, 0);
+        this.scene.add(test);
+
         this.target = (new THREE.Mesh(
             (new THREE.SphereGeometry(1)),
             (new THREE.MeshBasicMaterial({color: "#ff00aa"}))));
@@ -72,7 +81,9 @@ class LogoAnimation
         this.Update()
         this.initAxes();
         this.InitSettings();
-
+        this.transCTRL = initTransformControls(this.camera, this.renderer, this.scene, this.controls);
+        this.AddModel(this.scene);
+        // this.transCTRL.attach(this.models[0].geometry);
         // console.log(CurvePath);
         window.addEventListener('resize', () =>
         {
@@ -168,6 +179,7 @@ class LogoAnimation
         this.depthShader = BokehDepthShader;
         this.renderScene = new RenderPass(this.scene, this.camera)
         this.bloomPass = new UnrealBloomPass(new THREE.Vector2(0, 0), 1.5, 0.9, 0.05);
+        this.nbloomPass = new BloomPass(1.5, 25, 4, 1024);
         // this.customPass = new ShaderPass(AberrationShader)
         this.composer = new EffectComposer(this.renderer)
         this.bokehPass = new BokehPass(this.scene, this.camera, {
@@ -183,8 +195,10 @@ class LogoAnimation
         this.composer.addPass(this.renderScene)
         // this.composer.addPass(this.customPass)
 
-        this.composer.addPass(this.bloomPass)
-        this.composer.addPass(this.bokehPass);
+        // this.composer.addPass(this.bloomPass)
+        this.composer.addPass(this.nbloomPass)
+        // this.composer.addPass(this.bokehPass);
+
     }
 
     InitLineData()
@@ -206,30 +220,30 @@ class LogoAnimation
         // )
         const curveL1 = new THREE.CatmullRomCurve3(
             [
-                new THREE.Vector3(-11.764421951009506, 23.56679034773233, -157.85471560183635),
+                new THREE.Vector3(-13.610979937919645, 25.444325650708652, -152.80382366249071),
                 // new THREE.Vector3(196.46045616681047, 103.667270218675487, 168.65084080766593),
-                new THREE.Vector3(-10.238224083296704, 3.454664375850792, -89.35277153823496)]);
+                new THREE.Vector3(-25.766373179401665, 61.853773309772876, -200.3248411590761)]);
 
         const curveL2 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-10.238224083296704, 3.454664375850792, -89.35277153823496),
-            new THREE.Vector3(4.545299292331766, 10.678384811611359, -95.06212910904628),
-            new THREE.Vector3(-11.259624865955395, -3.8823521779072965, -101.33130441452205)]);
+            new THREE.Vector3(-25.766373179401665, 61.853773309772876, -200.3248411590761),
+            // new THREE.Vector3(4.545299292331766, 10.678384811611359, -95.06212910904628),
+            new THREE.Vector3(-16.055981613071882, 16.614419210570365, -160.7445259030055)]);
 
         const curveL3 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-11.227102439344371, -3.882356720174405, -101.22293834326538),
-            new THREE.Vector3(-201.1437509297759, -35.14372495646582, -164.94534870709504),
-            new THREE.Vector3(-85.72703198897776, 30.892873019671924, -254.4092195725853),
-            new THREE.Vector3(-11.68128773580167, 13.20311004398334, -158.75545730000857)]);
+            new THREE.Vector3(-16.055981613071882, 16.614419210570365, -160.7445259030055),
+            // new THREE.Vector3(-201.1437509297759, -35.14372495646582, -164.94534870709504),
+            // new THREE.Vector3(-85.72703198897776, 30.892873019671924, -254.4092195725853),
+            new THREE.Vector3(-11.993162651216146, -60.843331019807195, -91.68125672302678)]);
 
         const curveL4 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-12.604783626060788, 13.222477239153294, -159.21447284860764),
-            new THREE.Vector3(-12.604783626060788, 13.222477239153294, -159.21447284860764),
-            new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107)
+            new THREE.Vector3(-11.993162651216146, -60.843331019807195, -91.68125672302678),
+            // new THREE.Vector3(-12.604783626060788, 13.222477239153294, -159.21447284860764),
+            new THREE.Vector3(18.26692916206023, -7.024884616087243, -55.907065397542524)
         ]);
 
         const curveL5 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107),
-            new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107),
+            new THREE.Vector3(18.26692916206023, -7.024884616087243, -55.907065397542524),
+            // new THREE.Vector3(-5.638305616952007, -14.065584339407454, -107.33798625314107),
             new THREE.Vector3(0, 0, 0)
         ]);
 
@@ -251,28 +265,28 @@ class LogoAnimation
 
 
         const curve1 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-17.351256758347148, -87.27859245064224, -166.38835132132087),
+            new THREE.Vector3(40.88890436462656, 67.00252051608017, -82.35117429981787),
             // new THREE.Vector3(27.02787540231489, -24.64524022022103, -74.2897430552669),
-            new THREE.Vector3(-33.14287931466795, 87.27446416382537, -26.35586926120866)]);
+            new THREE.Vector3(-37.36800636729495, 79.60608938019726, -224.0208807743747)]);
 
         const curve2 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-33.14287931466795, 87.27446416382537, -26.35586926120866),
-            new THREE.Vector3(-20.14287931466795, 17.27446416382537, -26.35586926120866),
-            new THREE.Vector3(10.507031558253656, -95.18624508405821, -179.7973974327407)
+            new THREE.Vector3(-37.36800636729495, 79.60608938019726, -224.0208807743747),
+            // new THREE.Vector3(-20.14287931466795, 17.27446416382537, -26.35586926120866),
+            new THREE.Vector3(-70.49934142197266, -1.624931467121698, -188.01163587497274)
         ])
         const curve3 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(10.507031558253656, -95.18624508405821, -179.7973974327407),
-            new THREE.Vector3(-42.85347491819384, -78.30157126120932, -203.70369017597457),
-            new THREE.Vector3(-10.818613219302247, 121.31903628418618, -158.1799361215729)
+            new THREE.Vector3(-70.49934142197266, -1.624931467121698, -188.01163587497274),
+            // new THREE.Vector3(-42.85347491819384, -78.30157126120932, -203.70369017597457),
+            new THREE.Vector3(-17.16980543041983, 52.08956612342972, -110.70244479072903)
         ])
         const curve4 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-12.604720077994253, 129.09296855107493, -159.21438291676546),
-            new THREE.Vector3(-12.604720077994253, 129.09296855107493, -159.21438291676546),
-            new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544)
+            new THREE.Vector3(-17.16980543041983, 52.08956612342972, -110.70244479072903),
+            // new THREE.Vector3(-12.604720077994253, 129.09296855107493, -159.21438291676546),
+            new THREE.Vector3(-22.532271419873787, 26.357688611068134, -13.314446834973879)
         ]);
         const curve5 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544),
-            new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544),
+            new THREE.Vector3(-22.532271419873787, 26.357688611068134, -13.314446834973879),
+            // new THREE.Vector3(-29.226864629424043, 93.49930750749509, -52.64032678071544),
             new THREE.Vector3(0, 0, 450)
         ])
         const curve6 = new THREE.CatmullRomCurve3([
@@ -390,6 +404,7 @@ class LogoAnimation
             duration: 10,
             ease: "none",
             motionPath: {
+                autoRotate: false,
                 path: moveP1
             },
             onUpdate()
@@ -406,6 +421,7 @@ class LogoAnimation
             duration: 10,
             ease: "none",
             motionPath: {
+                autoRotate: false,
                 path: moveP2
             },
             onUpdate()
@@ -422,6 +438,7 @@ class LogoAnimation
             duration: 10,
             ease: "none",
             motionPath: {
+                autoRotate: false,
                 path: moveP3
             },
             onUpdate()
@@ -438,6 +455,7 @@ class LogoAnimation
             duration: 10,
             ease: "none",
             motionPath: {
+                autoRotate: false,
                 path: moveP4
             },
             onUpdate()
@@ -454,6 +472,7 @@ class LogoAnimation
             duration: 10,
             ease: "none",
             motionPath: {
+                autoRotate: false,
                 path: moveP5
             },
             onUpdate()
@@ -490,7 +509,7 @@ class LogoAnimation
 
     InitCamera()
     {
-        this.camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 1, 100000)
+        this.camera = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 0.1, 1000)
         // this.camera = new THREE.OrthographicCamera(-window.innerWidth, window.innerWidth, window.innerHeight, -window.innerHeight, 0.1, 1000)
         // this.camera.viewport = new THREE.Vector4(0, 0, 1000, 1000)
         // this.camera.position.set(0, 0, 50)//
@@ -501,10 +520,11 @@ class LogoAnimation
         // let camLook = this.MovePath.LookAtCurve.curves[0].getPoint(0);
         // console.log(camPos, camLook);
         this.scene.add(this.camera)
-        this.camera.position.set(26.65614, -18.40766, -77.79627);
-        this.camera.lookAt(new THREE.Vector3(-11.359254285677226, 18.22751993117231, -139.66914914670443));
+        this.camera.position.set(-56.12231834676021, -3.0991440201912592, -15.34821558342228);
+        this.camera.lookAt(new THREE.Vector3(18.506700011859667, -12.153526534913292, -56.37088778241507));
         // this.camera.position.set(-4.388497130267792, 2.8820619964812373, -50.870941259502025);
         // this.camera.lookAt(0, 0, -15);
+        console.log(this.camera);
 
     }
 
@@ -527,13 +547,43 @@ class LogoAnimation
             aperture: 5,
             maxblur: 0.01,
             restore: this.Restore.bind(this),
+            strengthNotUnreal: 1,
+            kernelSize: 25,
+            sigma: 4.0,
+            resolution: 256,
             ExpandOrFold: () =>
             {
                 ExpandOrFold(that, isExpand);
             },
             CamCtrlEnable: () =>
             {
-                timeline.seek(0);
+                // gsap.to(test.position, {
+                //     duration: 2,
+                //     motionPath: {
+                //         path: [
+                //             {x: 10, y: 10, z: 10},
+                //             {x: 5, y: 5, z: 5}]
+                //     }
+                // })
+                let model = that.models;
+                for (let i = 0; i < model.length; i++)
+                {
+                    // model[i].material.uniforms.far.value = far;
+                    gsap.to(model[i].material.uniforms.far,
+                        {
+                            motionPath: [
+                                {
+                                    far: 0
+                                },
+                                {
+                                    far: 500
+                                }
+                            ],
+                            duration: 1,
+                            value: far
+                        }
+                    )
+                }
             },
             OrbitCtrl: () =>
             {
@@ -580,11 +630,12 @@ class LogoAnimation
                         size = 0.1;
                     }
 
-
                     // value.geometry.scale.set(size, size, size);
                     // value.geometry.scale.set(0.5, 0.5, 0.5)
                 })
-            }
+            },
+            far: 100,
+            LookAtMouse: false
 
         }
         this.gui = new dat.GUI();
@@ -597,6 +648,22 @@ class LogoAnimation
         post.add(this.settings, 'focus')
         post.add(this.settings, 'aperture')
         post.add(this.settings, 'maxblur')
+        post.add(this.settings, 'strengthNotUnreal').onChange((value) =>
+        {
+            that.nbloomPass.strength = value;
+        })
+        post.add(this.settings, 'kernelSize').onChange((value) =>
+        {
+            that.nbloomPass.kernelSize = value;
+        })
+        post.add(this.settings, 'sigma').onChange((value) =>
+        {
+            that.nbloomPass.sigma = value;
+        })
+        post.add(this.settings, 'resolution').onChange((value) =>
+        {
+            that.nbloomPass.resolution = value;
+        })
         CameraCtrl.add(this.settings, 'ExpandOrFold');
         CameraCtrl.add(this.settings, 'CameraPos');
         CameraCtrl.add(this.settings, 'CamCtrlEnable').name("CamControls Enabled");
@@ -622,6 +689,14 @@ class LogoAnimation
         CameraCtrl.add(this.settings, 'TimeLineProgess');
         let PointCtrl = this.gui.addFolder('PointCtrl');
         PointCtrl.add(this.settings, 'SetPointSize');
+        PointCtrl.add(this.settings, 'far').onChange((value) =>
+        {
+            that.SetParticleFar(value);
+        });
+        PointCtrl.add(this.settings, 'LookAtMouse').onChange((value) =>
+        {
+
+        });
 
 
         // this.gui.add(this.camera, 'fov', 1, 180, 0.01);
@@ -663,6 +738,29 @@ class LogoAnimation
         }
     }
 
+    SetParticleFar(far)
+    {
+        let model = this.models;
+        for (let i = 0; i < model.length; i++)
+        {
+            // model[i].material.uniforms.far.value = far;
+            gsap.to(model[i].material.uniforms.far,
+                {
+                    // motionPath: [
+                    //     {
+                    //         value: 0
+                    //     },
+                    //     {
+                    //         value: far
+                    //     }
+                    // ],
+                    duration: 1,
+                    value: far
+                }
+            )
+        }
+        // console.log(model);//
+    }
 
     Resize()
     {
@@ -719,10 +817,12 @@ class LogoAnimation
         this.scene.add(axes);
     }
 
+
     AddModel(Scene)
     {
         let model_Logo = [];
         let that = this;
+        //zhuan.gltf  Logo_p60_newnew.gltf
         this.GLTFLoader.load("./model/Logo_p60_newnew.gltf", (gltf) =>
         {
             console.log(gltf);
@@ -733,10 +833,13 @@ class LogoAnimation
                 //model_Logo[i].geometry.position.set(0, 0, 0);
                 model_Logo[i].geometry.scale.set(1, 1, 1);
                 Scene.add(model_Logo[i].geometry);
+                initTransformControls(that.camera, that.renderer, that.scene, that.controls).attach(model_Logo[i].geometry);
             }
             that.models = (model_Logo);
             ExpandOrFold(that, false);
             // console.log(that.models);
+
+            console.log(that.transCTRL)
         });
     }
 
@@ -749,6 +852,7 @@ class LogoAnimation
         console.log("targetPos");
         console.log(this.target.position);
         console.log(this.camera);
+        console.log("ModelPos");
     }
 
     SetAnimation(index)
@@ -898,6 +1002,7 @@ function useCameraCurveMove(camera, path, duration, easing = "expo.inOut")
     return gsap.to(camera.position, {
         duration: duration, ease: easing, overwrite: true, // paused: true,
         motionPath: {
+            autoRotate: false,
             path: path
         }
     });
